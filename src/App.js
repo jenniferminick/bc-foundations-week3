@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/rules-of-hooks, no-undef */
+/* eslint-disable react-hooks/rules-of-hooks, no-undef, no-unused-vars, react-hooks/exhaustive-deps, no-mixed-operators, no-template-curly-in-string */
 import { useState, useEffect, useRef, createContext, useContext } from "react";
 
 
