@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { useState, useEffect, useRef, createContext, useContext } from "react";
 
 
@@ -120,7 +119,7 @@ const NAV=[
 async function callClaude(messages,system){
   const body={model:"claude-sonnet-4-20250514",max_tokens:2000,messages};
   if(system)body.system=system;
-  const r=await fetch("/api/claude",{
+  const r=await fetch("https://api.anthropic.com/v1/messages",{
     method:"POST",
     headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
     body:JSON.stringify(body)
@@ -630,7 +629,7 @@ function SideNav({current,onNavigate,flags,inputs}){
             </div>
             {isA&&sec.id==="assessment"&&Object.keys(subMap).length>0&&(
               Object.entries(subMap).map(([subId,subLabel])=>{
-                const stepMap={"assess_calls":"call_sliders","assess_estimates":"estimates","assess_ltv":"ltv","assess_report":"results"};
+                const stepMap={"assess_calls":"call_handling","assess_estimates":"estimates","assess_ltv":"ltv","assess_report":"results"};
                 const targetStep=stepMap[subId];
                 const completedSteps=["plinko","call_handling","call_handling_detail","call_config","call_sliders","estimates","ltv","results"];
                 const currentStepIdx=completedSteps.indexOf(inputs?.assessmentStep||"plinko");
@@ -846,7 +845,7 @@ Return only: [SUBJECT_LINE] then the subject line, then [EMAIL_BODY] then the em
 Do not include explanations, multiple options, or formatting notes.
 The result should be a polished, best-practice email that can be sent immediately.`
       +(isEs?"\n\nWrite entirely in Spanish.":"");
-    const resp=await fetch("/api/claude",{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{
       method:"POST",
       headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
       body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system,messages:[{role:"user",content:"Generate the email now."}]})
@@ -3299,7 +3298,7 @@ function ScoreBar({label,score,icon}){
   );
 }
 
-function AssessmentScreen({inputs,setInputs,onBack,jumpTo,onJumpConsumed}){
+function AssessmentScreen({inputs,setInputs,onBack,onNext,jumpTo,onJumpConsumed}){
   const s=useSp();
   const STEPS_LIST=["plinko","call_handling","call_handling_detail","call_config","call_sliders","estimates","ltv","results"];
   const [step,setStep]=useState(inputs.assessmentStep||"plinko");
@@ -3315,22 +3314,17 @@ function AssessmentScreen({inputs,setInputs,onBack,jumpTo,onJumpConsumed}){
         setCsrAiConfig(null);
         setHcpAssistConfig(null);
       } else {
-        const MAP={"assess_calls":"call_sliders","assess_estimates":"estimates","assess_ltv":"ltv","assess_report":"results"};
+        const MAP={"assess_calls":"call_handling","assess_estimates":"estimates","assess_ltv":"ltv","assess_report":"results"};
         if(MAP[jumpTo])setStep(MAP[jumpTo]);
       }
       onJumpConsumed&&onJumpConsumed();
     }
   },[jumpTo]);
   const [tc,setTc]=useState(inputs.tc||10);
-  // Only use stored mc if handling hasn't changed — otherwise reset to benchmark
   const [mc,setMc]=useState(()=>{
-    const storedHandling=inputs.handling;
-    const currentHandling=inputs.handling;
-    const isService=currentHandling==="service";
-    const hasProduct=inputs.answerSolution==="csr_ai"||inputs.answerSolution==="hcp_assist";
-    if(isService&&hasProduct)return inputs.mc!==undefined?inputs.mc:0;
-    // For self/csr: if stored mc is 0 and they aren't on a product, that's stale — reset to 3
-    if(inputs.mc!==undefined&&inputs.mc>0)return inputs.mc;
+    // If they have a saved value, use it
+    if(inputs.mc!==undefined&&inputs.mc>=0)return inputs.mc;
+    // Fresh run: default to 3 (useEffect will set to 0 if they pick CSR AI / HCP Assist)
     return 3;
   });
   const [handling,setHandling]=useState(inputs.handling||null);
@@ -3340,13 +3334,26 @@ function AssessmentScreen({inputs,setInputs,onBack,jumpTo,onJumpConsumed}){
   const [csrAiConfig,setCsrAiConfig]=useState(inputs.csrAiConfig||null);
   const [hcpAssistConfig,setHcpAssistConfig]=useState(inputs.hcpAssistConfig||null);
   const [callBookingRate,setCallBookingRate]=useState(inputs.callBookingRate||20);
+
+  // Auto-adjust mc when answerSolution changes:
+  // CSR AI / HCP Assist → default to 0 missed calls (product answers every call)
+  // Switching away from a product → reset to 3 if mc is still 0
+  useEffect(()=>{
+    const hasProduct=answerSolution==="csr_ai"||answerSolution==="hcp_assist";
+    if(hasProduct){
+      setMc(0);
+    } else if(answerSolution!==null){
+      // They switched away from a product — if mc is still at the product default of 0, bump to 3
+      setMc(prev=>prev===0?3:prev);
+    }
+  },[answerSolution]);
   const [closeRate,setCloseRate]=useState(inputs.closeRate||30);
   const [openEstimates,setOpenEstimates]=useState(inputs.openEstimates||10);
   const [avgJobSize,setAvgJobSize]=useState(inputs.avgJobSize||500);
   const [usesPipeline,setUsesPipeline]=useState(inputs.usesPipeline!==undefined?inputs.usesPipeline:null);
   const [customerCount,setCustomerCount]=useState(inputs.customerCount||200);
   const [jobsPerYear,setJobsPerYear]=useState(inputs.jobsPerYear||1.0);
-  const [hasDripCampaign,setHasDripCampaign]=useState(inputs.hasDripCampaign||false);
+  const [hasDripCampaign,setHasDripCampaign]=useState(inputs.hasDripCampaign!==undefined&&inputs.hasDripCampaign!==null?inputs.hasDripCampaign:null);
 
   const missedRate=tc>0?Math.round((mc/tc)*100):0;
   const pctColor=missedRate>=40?"#CC2200":missedRate>=20?"#B8860B":missedRate===0?"#10B981":"#2E8B57";
@@ -3675,8 +3682,18 @@ function AssessmentScreen({inputs,setInputs,onBack,jumpTo,onJumpConsumed}){
       <Card>
         <AssessSlider label={s?"Total de clientes en HCP":"Total customers in HCP"}
           hint={s?"En HCP: haz clic en Clientes — el número en la parte superior.":"In HCP: click Customers — the total count at the top."}
-          value={customerCount} min={1} max={2000} step={10} onChange={setCustomerCount}
-          formatVal={v=>v.toLocaleString()} leftLabel="1" rightLabel="2,000+"/>
+          value={Math.min(customerCount,2000)} min={1} max={2000} step={10} onChange={v=>setCustomerCount(v)}
+          formatVal={v=>v>=2000?(s?"2,000+":"2,000+"):v.toLocaleString()} leftLabel="1" rightLabel="2,000+"/>
+        {customerCount>=2000&&(
+          <div style={{marginTop:8,display:"flex",alignItems:"center",gap:8}}>
+            <span style={{fontSize:12,color:GRAY600,fontWeight:600,flexShrink:0}}>{s?"Ingresa el número exacto:":"Enter exact count:"}</span>
+            <input type="number" min={2000} step={10}
+              value={customerCount===2000?"":customerCount}
+              placeholder="e.g. 3500"
+              onChange={e=>{const v=parseInt(e.target.value);if(!isNaN(v)&&v>=2000)setCustomerCount(v);}}
+              style={{flex:1,padding:"8px 12px",border:"1.5px solid "+NAVY,borderRadius:8,fontFamily:"inherit",fontSize:14,color:NAVY,outline:"none",background:WHITE}}/>
+          </div>
+        )}
         <div style={{borderTop:"1px solid "+GRAY100,paddingTop:16}}>
           <AssessSlider label={s?"Trabajos por cliente por año (estimado)":"Estimated jobs per customer per year"}
             hint={s?"La mayoría entre 0.5 y 2. HVAC recurrente puede ser más alto.":"Most will be 0.5-2. Recurring HVAC may be higher."}
@@ -3689,7 +3706,7 @@ function AssessmentScreen({inputs,setInputs,onBack,jumpTo,onJumpConsumed}){
             value={hasDripCampaign} onChange={setHasDripCampaign}/>
         </div>
       </Card>
-      <BottomNav onBack={()=>setStep("estimates")} onNext={()=>goNext("results")}/>
+      <BottomNav onBack={()=>setStep("estimates")} onNext={()=>goNext("results")} nextDisabled={hasDripCampaign===null}/>
     </div>
   );
 
@@ -3699,6 +3716,8 @@ function AssessmentScreen({inputs,setInputs,onBack,jumpTo,onJumpConsumed}){
     const monthlyLeak=Math.round((mc*52/12)*(avgJobSize*(closeRate/100)*0.63));
     const openOpp=Math.round(openEstimates*avgJobSize*(closeRate/100));
     const ltvOpp=Math.round(customerCount*jobsPerYear*avgJobSize*0.02);
+    const totalOpp=monthlyLeak+openOpp+ltvOpp;
+
     const verdicts={
       A:s?"Estás en excelente forma. Estás por encima del 80% de los Pros.":"You're in excellent shape. You're ahead of 80% of Pros.",
       B:s?"Buen trabajo. Hay oportunidades claras para capturar más.":"Good work. There are clear opportunities to capture more revenue.",
@@ -3706,63 +3725,232 @@ function AssessmentScreen({inputs,setInputs,onBack,jumpTo,onJumpConsumed}){
       D:s?"Te estás quedando atrás. Los competidores están tomando tus trabajos.":"Falling behind. Competitors are taking jobs that should be yours.",
       F:s?"Crítico. Estos números requieren atención inmediata.":"Critical. These numbers require immediate attention.",
     };
+
+    const gradeColors={A:"rgba(16,185,129,0.7)",B:"rgba(16,185,129,0.45)",C:"rgba(245,124,0,0.65)",D:"rgba(229,57,53,0.65)",F:"rgba(229,57,53,0.9)"};
+    const orbBorderColor=gradeColors[og.grade]||"rgba(255,255,255,0.3)";
+
+    const areaBars=[
+      {label:s?"Llamadas Perdidas":"Missed Calls",    icon:"📞", score:callScore},
+      {label:s?"Estimados Abiertos":"Open Estimates",  icon:"📋", score:closeScore},
+      {label:s?"LTV del Cliente":"Customer LTV",       icon:"👥", score:ltvScore},
+    ];
+
+    // Ranked worst-to-best with coaching lines per area
+    const coachingLines={
+      "📞":{
+        en:"Missed calls are your fastest leak. Every unanswered call is a customer calling your competitor within 5 minutes.",
+        es:"Las llamadas perdidas son tu fuga más rápida. Cada llamada sin respuesta es un cliente llamando a tu competidor en 5 minutos.",
+      },
+      "📋":{
+        en:"Open estimates go cold fast. Your close rate drops by half within 48 hours of sending a quote.",
+        es:"Las cotizaciones se enfrían rápido. Tu tasa de cierre cae a la mitad en 48 horas de enviar una cotización.",
+      },
+      "👥":{
+        en:"Past customers are your easiest revenue. They already trust you — they just need a reason to call back.",
+        es:"Los clientes pasados son tu ingreso más fácil. Ya confían en ti — solo necesitan una razón para llamar.",
+      },
+    };
+
+    const ranked=[...areaBars].sort((a,b)=>a.score-b.score);
+    const numColors=["#CC2200","#B8860B","#0055FF"]; // red, amber, blue — matches Image 3
+
+    const oppItems=[
+      {label:s?"Llamadas Perdidas":"Missed Calls",      val:"$"+monthlyLeak.toLocaleString()},
+      {label:s?"Estimados Abiertos":"Open Estimates",   val:"$"+openOpp.toLocaleString()},
+      {label:s?"Reactivación LTV":"LTV Reactivation",   val:"$"+ltvOpp.toLocaleString()},
+    ];
+
+    const dataLine=s
+      ?`${mc} llamadas perdidas/sem · ${openEstimates} cotizaciones abiertas · ${customerCount} clientes`
+      :`${mc} missed calls/wk · ${openEstimates} open estimates · ${customerCount} customers`;
+
     return (
       <div>
-        <SectionHeader emoji="🔍" title={s?"Tu Puntuación de Evaluación":"Your Assessment Score"}/>
-        <div style={{background:"linear-gradient(135deg,"+NAVY+",#0d3872)",borderRadius:20,padding:"32px 24px",marginBottom:20,textAlign:"center"}}>
-          <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"2px",marginBottom:20}}>
-            {s?"PUNTUACIÓN GENERAL":"OVERALL SCORE"}
-          </div>
-          <ScoreOrb score={overall}/>
-          <div style={{marginTop:16,fontSize:14,color:"rgba(255,255,255,0.75)",lineHeight:1.7,maxWidth:400,margin:"16px auto 0"}}>
-            {verdicts[og.grade]}
+        <style>{`
+          @keyframes w3ScorePop{from{transform:scale(0.5);opacity:0}to{transform:scale(1);opacity:1}}
+          .w3-orb-anim{animation:w3ScorePop 0.65s cubic-bezier(0.34,1.56,0.64,1) 0.15s both;}
+        `}</style>
+
+        {/* ── HERO GRADIENT BAND (ends at orb bottom edge) ── */}
+        <div style={{
+          background:"linear-gradient(135deg,"+NAVY+" 0%,#0d3872 100%)",
+          borderRadius:"20px 20px 0 0",
+          paddingBottom:56, /* space for orb to extend down */
+          position:"relative",
+          textAlign:"center",
+        }}>
+          {/* dot pattern */}
+          <div style={{position:"absolute",inset:0,borderRadius:"20px 20px 0 0",opacity:0.035,
+            backgroundImage:"radial-gradient(circle,#fff 1px,transparent 1px)",
+            backgroundSize:"22px 22px",pointerEvents:"none"}}/>
+
+          <div style={{padding:"32px 28px 0",position:"relative"}}>
+            <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.45)",
+              textTransform:"uppercase",letterSpacing:"2.5px",marginBottom:24}}>
+              {s?"PUNTUACIÓN DE EVALUACIÓN":"ASSESSMENT SCORE"}
+            </div>
+
+            {/* Animated orb — sits at bottom of hero, overlaps white card below */}
+            <div className="w3-orb-anim" style={{
+              width:168,height:168,borderRadius:"50%",
+              background:"rgba(255,255,255,0.1)",
+              border:"4px solid "+orbBorderColor,
+              display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+              margin:"0 auto",
+              boxShadow:"0 8px 48px rgba(0,0,0,0.35), 0 0 0 8px rgba(255,255,255,0.04)",
+              position:"relative",zIndex:3,
+            }}>
+              <div style={{fontSize:76,fontWeight:800,color:WHITE,lineHeight:1,letterSpacing:"-4px"}}>{og.grade}</div>
+              <div style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.55)",marginTop:1}}>{overall} / 100</div>
+            </div>
           </div>
         </div>
-        <Card>
-          <div style={{fontWeight:800,color:NAVY,fontSize:15,marginBottom:4}}>{s?"Puntuación por área":"Score by area"}</div>
-          <div style={{fontSize:12,color:GRAY400,marginBottom:16}}>{s?"Así se desglosa tu puntuación general.":"Here's how your overall score breaks down."}</div>
-          <ScoreBar label={s?"Llamadas Perdidas":"Missed Calls"} score={callScore} icon="📞"/>
-          <ScoreBar label={s?"Estimados Abiertos":"Open Estimates"} score={closeScore} icon="📋"/>
-          <ScoreBar label={s?"Valor de Vida del Cliente":"Customer LTV"} score={ltvScore} icon="👥"/>
-        </Card>
-        <div style={{background:NAVY,borderRadius:16,padding:"20px 22px",marginBottom:20}}>
-          <div style={{color:YELLOW,fontWeight:900,fontSize:12,marginBottom:12,textTransform:"uppercase",letterSpacing:"0.06em"}}>
-            💰 {s?"Oportunidad mensual estimada":"Estimated monthly opportunity"}
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
-            {[
-              {label:s?"Llamadas perdidas":"Missed calls",val:"$"+monthlyLeak.toLocaleString(),sub:s?"por mes":"/ mo"},
-              {label:s?"Cotizaciones abiertas":"Open estimates",val:"$"+openOpp.toLocaleString(),sub:s?"pendiente":"pending"},
-              {label:s?"Reactivación LTV":"LTV reactivation",val:"$"+ltvOpp.toLocaleString(),sub:s?"potencial":"potential"},
-            ].map((item,i)=>(
-              <div key={i} style={{background:"rgba(255,255,255,0.07)",borderRadius:12,padding:"14px 10px",textAlign:"center"}}>
-                <div style={{fontSize:18,fontWeight:900,color:YELLOW,lineHeight:1}}>{item.val}</div>
-                <div style={{fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"0.5px",marginTop:4,lineHeight:1.3}}>{item.label}<br/>{item.sub}</div>
-              </div>
-            ))}
-          </div>
+
+        {/* ── WHITE VERDICT CARD — floats up over hero bottom ── */}
+        <div style={{
+          background:WHITE,
+          borderRadius:16,
+          padding:"24px 24px 20px",
+          margin:"0 0 0 0",
+          marginTop:-48,
+          position:"relative",zIndex:2,
+          boxShadow:"0 8px 32px rgba(10,36,67,0.15)",
+          textAlign:"center",
+        }}>
+          <div style={{height:32}}/>{/* spacer so orb sits above this text */}
+          <div style={{fontSize:20,fontWeight:900,color:og.color,marginBottom:6,letterSpacing:"-0.3px"}}>{og.label}</div>
+          <div style={{fontSize:13,color:GRAY600,lineHeight:1.7,maxWidth:360,margin:"0 auto"}}>{verdicts[og.grade]}</div>
         </div>
-        <Card>
-          <div style={{fontWeight:800,color:NAVY,fontSize:15,marginBottom:12}}>{s?"¿En qué enfocarte primero?":"What to focus on first"}</div>
-          {[
-            {score:callScore, icon:"📞",area:s?"Llamadas Perdidas":"Missed Calls",  action:s?"Llamadas Perdidas → Solución Rápida":"Missed Calls → Quick Fix"},
-            {score:closeScore,icon:"📋",area:s?"Estimados Abiertos":"Open Estimates",           action:s?"Estimados Abiertos → Solución Rápida":"Open Estimates → Quick Fix"},
-            {score:ltvScore,  icon:"👥",area:s?"LTV del Cliente":"Customer LTV",  action:s?"LTV del Cliente → Solución Rápida":"Customer LTV → Quick Fix"},
-          ].sort((a,b)=>a.score-b.score).map((item,i)=>{
-            const g=scoreGrade(item.score);
+
+        {/* ── SCORE BARS — dark footer panel, rounds bottom corners ── */}
+        <div style={{
+          background:"#0d2240",
+          borderRadius:"0 0 20px 20px",
+          padding:"20px 28px 24px",
+          marginBottom:20,
+        }}>
+          <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.4)",
+            textTransform:"uppercase",letterSpacing:"2px",marginBottom:14}}>
+            {s?"PUNTUACIÓN POR ÁREA":"SCORE BY AREA"}
+          </div>
+          {areaBars.map((ab,i)=>{
+            const g=scoreGrade(ab.score);
             return (
-              <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",padding:"10px 0",borderBottom:i<2?"1px solid "+GRAY100:"none"}}>
-                <div style={{width:32,height:32,borderRadius:8,background:g.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{item.icon}</div>
-                <div>
-                  <div style={{fontWeight:800,color:NAVY,fontSize:13}}>#{i+1} — {item.area}</div>
-                  <div style={{fontSize:12,color:g.color,fontWeight:700,marginTop:2}}>{g.label} — {item.score}/100</div>
-                  <div style={{fontSize:12,color:GRAY600,marginTop:2}}>{item.action}</div>
+              <div key={i} style={{marginBottom:i<areaBars.length-1?12:0}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:5}}>
+                  <div style={{display:"flex",alignItems:"center",gap:7}}>
+                    <span style={{fontSize:13}}>{ab.icon}</span>
+                    <span style={{fontSize:12,fontWeight:700,color:"rgba(255,255,255,0.82)"}}>{ab.label}</span>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:7}}>
+                    <span style={{fontSize:11,fontWeight:800,color:g.color,background:g.bg,
+                      borderRadius:5,padding:"1px 7px"}}>{g.label}</span>
+                    <span style={{fontSize:11,fontWeight:600,color:"rgba(255,255,255,0.4)"}}>{ab.score}/100</span>
+                  </div>
+                </div>
+                <div style={{background:"rgba(255,255,255,0.1)",borderRadius:99,height:7,overflow:"hidden"}}>
+                  <div style={{height:"100%",borderRadius:99,background:g.color,
+                    width:ab.score+"%",transition:"width 1.1s ease"}}/>
                 </div>
               </div>
             );
           })}
-        </Card>
-        <BottomNav onBack={()=>setStep("ltv")}/>
+        </div>
+
+        {/* ── OPPORTUNITY COST ── dark navy card, big number up top, 3 pills below */}
+        <div style={{background:NAVY,borderRadius:16,padding:"22px 22px 20px",marginBottom:20}}>
+          {/* Eyebrow */}
+          <div style={{fontSize:10,fontWeight:700,color:YELLOW,textTransform:"uppercase",
+            letterSpacing:"2px",marginBottom:6}}>
+            💰 {s?"INGRESOS QUE SE PIERDEN CADA MES":"REVENUE LEAVING EVERY MONTH"}
+          </div>
+          {/* Big number */}
+          <div style={{fontSize:42,fontWeight:900,color:WHITE,letterSpacing:"-1.5px",lineHeight:1,marginBottom:4}}>
+            ${totalOpp.toLocaleString()}<span style={{fontSize:18,fontWeight:700,color:"rgba(255,255,255,0.5)",letterSpacing:0}}>/mo</span>
+          </div>
+          <div style={{fontSize:11,color:"rgba(255,255,255,0.45)",fontWeight:600,marginBottom:18,lineHeight:1.5}}>
+            {dataLine}
+          </div>
+          {/* 3 pills */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+            {oppItems.map((item,i)=>(
+              <div key={i} style={{background:"rgba(255,255,255,0.07)",borderRadius:10,
+                padding:"12px 8px",textAlign:"center",border:"1px solid rgba(255,255,255,0.07)"}}>
+                <div style={{fontSize:17,fontWeight:900,color:YELLOW,lineHeight:1,
+                  letterSpacing:"-0.3px"}}>{item.val}</div>
+                <div style={{fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.4)",
+                  textTransform:"uppercase",letterSpacing:"0.4px",marginTop:5,lineHeight:1.4}}>
+                  {item.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── WHAT TO FOCUS ON FIRST ── numbered circles like Image 3 */}
+        <div style={{background:WHITE,borderRadius:16,padding:"22px 20px",
+          boxShadow:"0 2px 12px rgba(10,36,67,0.07)",marginBottom:20,
+          border:"1.5px solid "+GRAY100}}>
+
+          {/* Header with HCP framing */}
+          <div style={{background:NAVY,borderRadius:12,padding:"16px 18px",marginBottom:20}}>
+            <div style={{fontSize:10,fontWeight:700,color:YELLOW,textTransform:"uppercase",
+              letterSpacing:"1.5px",marginBottom:6}}>
+              {s?"TU PLAN — 3 ÁREAS A TRABAJAR":"YOUR PLAN — 3 AREAS TO WORK"}
+            </div>
+            <div style={{fontSize:15,fontWeight:800,color:WHITE,lineHeight:1.35,marginBottom:4}}>
+              {s?"3 estrategias que pueden cambiar tus números esta semana":"3 strategies that can change your numbers this week"}
+            </div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,0.55)",fontWeight:600}}>
+              {s?"Clasificado por el mayor impacto potencial en tus ingresos.":"Ranked by highest potential impact on your revenue."}
+            </div>
+          </div>
+
+          {/* Numbered rows */}
+          {ranked.map((item,i)=>{
+            const g=scoreGrade(item.score);
+            const coaching=coachingLines[item.icon];
+            const coachText=s?coaching.es:coaching.en;
+            const parts=coachText.split(". ");
+            const boldPart=parts[0]+".";
+            const restPart=parts.slice(1).join(". ");
+            return (
+              <div key={i} style={{
+                display:"flex",gap:14,alignItems:"flex-start",
+                padding:"14px 0",
+                borderBottom:i<ranked.length-1?"1px solid "+GRAY100:"none",
+              }}>
+                {/* Numbered circle */}
+                <div style={{
+                  width:32,height:32,borderRadius:"50%",flexShrink:0,
+                  background:numColors[i],
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:14,fontWeight:900,color:WHITE,
+                  boxShadow:"0 2px 8px rgba(0,0,0,0.15)",
+                  marginTop:1,
+                }}>
+                  {i+1}
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4,flexWrap:"wrap"}}>
+                    <span style={{fontSize:13,fontWeight:900,color:NAVY}}>{item.label}</span>
+                    <span style={{fontSize:11,fontWeight:800,color:g.color,
+                      background:g.bg,borderRadius:5,padding:"1px 7px",
+                      border:"1px solid "+g.border}}>
+                      {g.label} — {item.score}/100
+                    </span>
+                  </div>
+                  <div style={{fontSize:13,color:GRAY600,lineHeight:1.6}}>
+                    <strong style={{color:NAVY}}>{boldPart}</strong>
+                    {restPart?" "+restPart:""}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <BottomNav onBack={()=>setStep("ltv")} onNext={onNext}/>
       </div>
     );
   }
@@ -4634,15 +4822,21 @@ export function Week3App({onHome}){
   const isHome=phase==="home"||phase==="setup";
   const s=lang==="es";
 
+  const [assessRestartModal,setAssessRestartModal]=useState(false);
+
   function nav(id,sub){
     if(id==="assessment"&&sub){
       // Sub-menu click: jump to specific step
       setInputs(p=>({...p,_assessJump:sub}));
       setPhase("assessment");
     } else if(id==="assessment"&&!sub){
-      // Top-level Assessment click: always restart from plinko
-      setInputs(p=>({...p,_assessJump:"__plinko__"}));
-      setPhase("assessment");
+      // Top-level Assessment click: if they've started before, ask what to do
+      const hasProgress=inputs.assessmentComplete||inputs.assessmentStep;
+      if(hasProgress){
+        setAssessRestartModal(true);
+      } else {
+        setPhase("assessment");
+      }
     } else if(sub&&W3_PHASES.has(sub)){
       setPhase(sub);
     } else if(W3_PHASES.has(id)){
@@ -4656,12 +4850,57 @@ export function Week3App({onHome}){
   return (
     <LangCtx.Provider value={lang}>
       <style>{`
-        input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:99px;background:#CBD5E1;outline:none;cursor:pointer;}
-        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;background:#0A2443;cursor:pointer;box-shadow:0 2px 8px rgba(10,36,67,0.35);border:3px solid #fff;}
+        input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:99px;background:#CBD5E1;outline:none;cursor:pointer;display:block;margin:10px 0;}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;background:#0A2443;cursor:pointer;box-shadow:0 2px 8px rgba(10,36,67,0.35);border:3px solid #fff;margin-top:-10px;}
         input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#0A2443;cursor:pointer;box-shadow:0 2px 8px rgba(10,36,67,0.35);border:3px solid #fff;box-sizing:border-box;}
-        input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:99px;}
+        input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:99px;background:#CBD5E1;}
         input[type=range]::-moz-range-track{height:6px;border-radius:99px;background:#CBD5E1;}
       `}</style>
+
+      {/* Assessment restart modal */}
+      {assessRestartModal&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(10,36,67,0.6)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+          <div style={{background:WHITE,borderRadius:20,padding:"32px 28px",maxWidth:420,width:"100%",boxShadow:"0 8px 40px rgba(0,0,0,0.25)"}}>
+            <div style={{fontSize:32,textAlign:"center",marginBottom:12}}>🔍</div>
+            <div style={{fontWeight:900,color:NAVY,fontSize:18,textAlign:"center",marginBottom:8}}>
+              {s?"¿Volver a hacer la evaluación?":"Redo the assessment?"}
+            </div>
+            <p style={{fontSize:14,color:GRAY600,textAlign:"center",lineHeight:1.7,margin:"0 0 24px"}}>
+              {s?"Ya tienes una evaluación guardada. ¿Quieres empezar desde cero o continuar donde lo dejaste?":"You have a saved assessment. Do you want to start fresh or pick up where you left off?"}
+            </p>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <button onClick={()=>{
+                // Reset all assessment-related inputs to defaults
+                setInputs(p=>({
+                  ...p,
+                  assessmentStep:null,assessmentComplete:false,
+                  tc:undefined,mc:undefined,handling:null,selfBehavior:null,
+                  csrCost:undefined,answerSolution:null,csrAiConfig:null,hcpAssistConfig:null,
+                  callBookingRate:undefined,closeRate:undefined,openEstimates:undefined,
+                  avgJobSize:undefined,usesPipeline:null,customerCount:undefined,
+                  jobsPerYear:undefined,hasDripCampaign:null,
+                  _assessJump:"__plinko__",
+                }));
+                setAssessRestartModal(false);
+                setPhase("assessment");
+              }} style={{background:NAVY,border:"none",borderRadius:12,padding:"14px",color:WHITE,fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>
+                🔄 {s?"Empezar desde cero":"Start fresh"}
+              </button>
+              <button onClick={()=>{
+                setAssessRestartModal(false);
+                setPhase("assessment");
+              }} style={{background:WHITE,border:"2px solid "+NAVY,borderRadius:12,padding:"14px",color:NAVY,fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>
+                ↩ {s?"Continuar donde lo dejé":"Continue where I left off"}
+              </button>
+              <button onClick={()=>setAssessRestartModal(false)}
+                style={{background:"none",border:"none",fontSize:13,color:GRAY400,cursor:"pointer",padding:"6px",fontFamily:"inherit"}}>
+                {s?"Cancelar":"Cancel"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{minHeight:"100vh",background:GRAY50,fontFamily:"'Inter',-apple-system,sans-serif"}}>
         {/* Header — matches Week 2 exactly */}
         <div style={{background:NAVY,padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100,boxShadow:"0 2px 12px rgba(0,0,0,0.2)"}}>
@@ -4703,7 +4942,7 @@ export function Week3App({onHome}){
           {/* Main content — matches Week 2 inner phase padding */}
           <div style={{flex:1,padding:isHome?"28px 24px 60px":"28px 40px 60px",minWidth:0,display:"flex",flexDirection:"column",alignItems:"center"}}>
             <div style={{width:"100%",maxWidth:isHome?960:720}}>
-            {phase==="assessment"&&<AssessmentScreen inputs={inputs} setInputs={setInputs} onBack={()=>setPhase("home")} jumpTo={inputs._assessJump} onJumpConsumed={()=>setInputs(p=>({...p,_assessJump:null}))}/>}
+            {phase==="assessment"&&<AssessmentScreen inputs={inputs} setInputs={setInputs} onBack={()=>setPhase("home")} onNext={()=>setPhase("t3_intro")} jumpTo={inputs._assessJump} onJumpConsumed={()=>setInputs(p=>({...p,_assessJump:null}))}/>}
             {phase==="home"&&<HomeScreen onStart={()=>setPhase("setup")} onNavigate={nav} flags={flags}/>}
             {phase==="setup"&&<SetupScreen inputs={inputs} setInputs={setInputs} onNext={()=>setPhase("t3_intro")} onBack={()=>setPhase("home")}/>}
 
