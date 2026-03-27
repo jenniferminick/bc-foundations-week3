@@ -122,7 +122,7 @@ async function callClaude(messages,system){
   if(system)body.system=system;
   const r=await fetch("https://api.anthropic.com/v1/messages",{
     method:"POST",
-    headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true","x-api-key":process.env.REACT_APP_ANTHROPIC_KEY},
     body:JSON.stringify(body)
   });
   if(!r.ok)throw new Error("API "+r.status);
@@ -848,7 +848,7 @@ The result should be a polished, best-practice email that can be sent immediatel
       +(isEs?"\n\nWrite entirely in Spanish.":"");
     const resp=await fetch("https://api.anthropic.com/v1/messages",{
       method:"POST",
-      headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true","x-api-key":process.env.REACT_APP_ANTHROPIC_KEY},
       body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system,messages:[{role:"user",content:"Generate the email now."}]})
     });
     if(!resp.ok)throw new Error("API "+resp.status);
