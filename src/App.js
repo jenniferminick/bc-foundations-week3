@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { useState, useEffect, useRef, createContext, useContext } from "react";
 
 
@@ -417,7 +416,7 @@ function BucketScriptScreen({bucket,inputs,setFlag,flagKey,onNext,onBack,titleEm
           </Btn>
         </Card>
       )}
-      <BottomNav onBack={onBack} onNext={()=>onNext(picked)} nextDisabled={!picked}/>
+      <BottomNav onBack={onBack} onNext={onNext}/>
     </div>
   );
 }
@@ -632,7 +631,7 @@ function SideNav({current,onNavigate,flags,inputs}){
               Object.entries(subMap).map(([subId,subLabel])=>{
                 const stepMap={"assess_calls":"call_handling","assess_estimates":"estimates","assess_ltv":"ltv","assess_report":"results"};
                 const targetStep=stepMap[subId];
-                const completedSteps=["plinko","call_handling","call_handling_detail","call_config","call_sliders","estimates","ltv","results"];
+                const completedSteps=["plinko","trade_pick","call_handling","call_handling_detail","call_config","call_sliders","estimates","ltv","results"];
                 const currentStepIdx=completedSteps.indexOf(inputs?.assessmentStep||"plinko");
                 const targetStepIdx=completedSteps.indexOf(targetStep);
                 const isDoneItem=inputs?.assessmentComplete&&targetStep==="results"||currentStepIdx>targetStepIdx;
@@ -1430,14 +1429,193 @@ function T3CustomersScript({inputs,setFlag,onNext,onBack}){
             </div>
           ))}
         </div>
-        <BottomNav onBack={onBack} onNext={()=>{if(blastType){setStep("learn");}}} nextDisabled={!blastType}/>
+        <BottomNav onBack={onBack} onNext={()=>{if(blastType){setStep(blastType==="email"?"roi":"learn");}}} nextDisabled={!blastType}/>
+      </div>
+    );
+  }
+
+  // ── EMAIL ROI CALCULATOR SCREEN ──────────────────────────────────────────────
+  if(step==="roi"){
+    const custCount=inputs.customerCount||200;
+    const avgJob=inputs.avgJobSize||500;
+    const delivered=Math.round(custCount*0.95);
+    const opensLow=Math.round(delivered*0.40);
+    const opensHigh=Math.round(delivered*0.60);
+    const jobsLow=Math.round(delivered*0.015);
+    const jobsHigh=Math.round(delivered*0.02);
+    const earnLow=jobsLow*avgJob;
+    const earnHigh=jobsHigh*avgJob;
+
+    return (
+      <div>
+        {/* Eyebrow + title + momentum line */}
+        <div style={{marginBottom:20}}>
+          <div style={{display:"inline-flex",alignItems:"center",gap:7,
+            background:"rgba(255,183,6,0.15)",border:"1px solid rgba(255,183,6,0.4)",
+            borderRadius:20,padding:"4px 14px",marginBottom:10}}>
+            <span style={{fontSize:12,fontWeight:800,color:"#B8860B",letterSpacing:"0.4px"}}>
+              💰 {s?"INGRESOS RECUPERABLES":"RECOVERABLE REVENUE"}
+            </span>
+          </div>
+          <h2 style={{fontSize:22,fontWeight:900,color:NAVY,margin:"0 0 6px",lineHeight:1.2}}>
+            {s?"¿Cuánto puedes generar?":"How Much Could You Earn?"}
+          </h2>
+          <p style={{fontSize:13,color:GRAY600,margin:0,lineHeight:1.6}}>
+            {s
+              ?"Este ingreso ya existe en tu lista de clientes. Solo necesita un email para desbloquearlo."
+              :"This revenue already exists in your customer list. It just needs one email to unlock it."}
+          </p>
+        </div>
+
+        {/* ── ONE UNIFIED CARD — gradient hero + divider + white breakdown ── */}
+        <div style={{
+          borderRadius:20,overflow:"hidden",
+          border:"2px solid #1a3a6b",
+          boxShadow:"0 8px 32px rgba(10,36,67,0.18)",
+          marginBottom:16,
+        }}>
+          {/* TOP: gradient earn section */}
+          <div style={{
+            background:"linear-gradient(135deg,"+NAVY+" 0%,#0d3872 100%)",
+            padding:"28px 24px 24px",
+            position:"relative",overflow:"hidden",
+          }}>
+            <div style={{position:"absolute",inset:0,opacity:0.035,
+              backgroundImage:"radial-gradient(circle,#fff 1px,transparent 1px)",
+              backgroundSize:"22px 22px",pointerEvents:"none"}}/>
+            <div style={{position:"relative",textAlign:"center"}}>
+              <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.45)",
+                textTransform:"uppercase",letterSpacing:"2.5px",marginBottom:10}}>
+                {s?"PODRÍAS GANAR":"YOU COULD EARN"}
+              </div>
+              <div style={{fontSize:40,fontWeight:900,color:WHITE,
+                letterSpacing:"-1.5px",lineHeight:1,marginBottom:20}}>
+                ${earnLow.toLocaleString()} – ${earnHigh.toLocaleString()}
+              </div>
+
+              {/* Emotional anchor */}
+              <div style={{
+                background:"rgba(255,183,6,0.12)",
+                border:"1px solid rgba(255,183,6,0.3)",
+                borderRadius:12,padding:"12px 16px",
+                marginBottom:20,textAlign:"left",
+              }}>
+                <div style={{fontSize:11,fontWeight:800,color:YELLOW,
+                  textTransform:"uppercase",letterSpacing:"1px",marginBottom:4}}>
+                  {s?"Lo que esto significa":"What this means"}
+                </div>
+                <div style={{fontSize:13,color:"rgba(255,255,255,0.85)",lineHeight:1.6,fontWeight:600}}>
+                  {s
+                    ?`Un email. Unos 5–15 minutos con nuestra guía paso a paso. Potencialmente $${earnLow.toLocaleString()}–$${earnHigh.toLocaleString()} de vuelta en tu bolsillo.`
+                    :`One email. About 5–15 minutes with our step-by-step walkthrough. Potentially $${earnLow.toLocaleString()}–$${earnHigh.toLocaleString()} back in your pocket.`}
+                </div>
+              </div>
+
+              {/* Formula chips */}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,flexWrap:"wrap"}}>
+                {[
+                  {val:custCount.toLocaleString(),label:s?"Enviados":"Sent"},
+                  {sep:"×"},
+                  {val:"95%",label:s?"Entregados":"Delivered"},
+                  {sep:"×"},
+                  {val:"1.5–2%",label:s?"Reservas":"Booking"},
+                  {sep:"="},
+                  {val:`${jobsLow}–${jobsHigh}`,label:s?"Trabajos":"Jobs",highlight:true},
+                ].map((item,i)=>(
+                  item.sep
+                    ?<span key={i} style={{color:"rgba(255,255,255,0.3)",fontSize:14,fontWeight:700}}>{item.sep}</span>
+                    :<div key={i} style={{
+                      background:item.highlight?"rgba(255,183,6,0.2)":"rgba(255,255,255,0.08)",
+                      border:"1px solid "+(item.highlight?"rgba(255,183,6,0.5)":"rgba(255,255,255,0.12)"),
+                      borderRadius:9,padding:"7px 12px",textAlign:"center",
+                    }}>
+                      <div style={{fontSize:14,fontWeight:900,
+                        color:item.highlight?YELLOW:WHITE,lineHeight:1}}>{item.val}</div>
+                      <div style={{fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.4)",
+                        textTransform:"uppercase",letterSpacing:"0.4px",marginTop:3}}>{item.label}</div>
+                    </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* BRIDGE DIVIDER */}
+          <div style={{background:"#0d2240",padding:"7px 24px",
+            display:"flex",alignItems:"center",gap:10}}>
+            <div style={{flex:1,height:1,background:"rgba(255,255,255,0.07)"}}/>
+            <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.3)",
+              textTransform:"uppercase",letterSpacing:"2px",whiteSpace:"nowrap"}}>
+              {s?"CÓMO SE CALCULA":"HOW IT BREAKS DOWN"}
+            </div>
+            <div style={{flex:1,height:1,background:"rgba(255,255,255,0.07)"}}/>
+          </div>
+
+          {/* BOTTOM: breakdown rows — now with correct math */}
+          <div style={{background:WHITE}}>
+            {[
+              {
+                icon:"✉️",iconBg:"#EFF6FF",
+                label:s?"Emails enviados":"Emails Sent",
+                sub:s?`${custCount.toLocaleString()} clientes en tu lista`:`${custCount.toLocaleString()} customers in your list`,
+                val:custCount.toLocaleString(),
+              },
+              {
+                icon:"📬",iconBg:"#F0FDF4",
+                label:s?"Entregados":"Delivered",
+                sub:s?"95% tasa de entrega":"95% delivery rate",
+                val:delivered.toLocaleString(),
+              },
+              {
+                icon:"👁️",iconBg:"#FFFBEB",
+                label:s?"Aperturas estimadas":"Est. Opens",
+                sub:s?"40–60% tasa de apertura":"40–60% open rate",
+                val:`${opensLow.toLocaleString()} – ${opensHigh.toLocaleString()}`,
+              },
+              {
+                icon:"📅",iconBg:"#F0FDF4",
+                label:s?"Trabajos reservados":"Jobs Booked",
+                sub:s?"1.5–2% tasa de reserva":"1.5–2% booking rate",
+                val:`${jobsLow} – ${jobsHigh}`,
+                highlight:true,
+              },
+            ].map((row,i,arr)=>(
+              <div key={i} style={{
+                display:"flex",alignItems:"center",gap:14,
+                padding:"14px 20px",
+                borderBottom:i<arr.length-1?"1px solid #F4F6FA":"none",
+                background:row.highlight?"#F0FDF4":WHITE,
+              }}>
+                <div style={{width:38,height:38,borderRadius:10,background:row.iconBg,
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:17,flexShrink:0}}>{row.icon}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:800,color:row.highlight?"#065F46":NAVY,lineHeight:1.2}}>{row.label}</div>
+                  <div style={{fontSize:11,color:GRAY400,fontWeight:600,marginTop:2}}>{row.sub}</div>
+                </div>
+                <div style={{textAlign:"right",flexShrink:0}}>
+                  <div style={{fontSize:15,fontWeight:900,color:row.highlight?"#065F46":NAVY}}>{row.val}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Disclaimer */}
+        <div style={{fontSize:11,color:GRAY400,textAlign:"center",
+          marginBottom:20,fontWeight:600,lineHeight:1.6}}>
+          {s
+            ?"Basado en benchmarks de email de la industria. Los resultados varían según la calidad de la lista y el mensaje."
+            :"Based on email industry benchmarks. Results vary based on list quality and message."}
+        </div>
+
+        <BottomNav onBack={()=>setStep("pick")} onNext={()=>setStep("learn")}/>
       </div>
     );
   }
 
   if(step==="learn"){
     return <T3CustomersLearn
-      onBack={()=>setStep("pick")}
+      onBack={()=>setStep(isEmail?"roi":"pick")}
       onNext={(picked)=>{
         if(picked==="video") setStep("video");
         else if(picked==="steps") setStep("steps");
@@ -1535,7 +1713,7 @@ function T3CustomersScript({inputs,setFlag,onNext,onBack}){
           setVal={q.setVal}
           step={qIdx+1}
           total={TOTAL}
-          onBack={qIdx===0?onBack:()=>setStep(EMAIL_STEP_KEYS[qIdx-1])}
+          onBack={qIdx===0?()=>setStep("learn"):()=>setStep(EMAIL_STEP_KEYS[qIdx-1])}
           onNext={()=>{
             if(!q.val.trim())return;
             if(qIdx<TOTAL-1){setStep(EMAIL_STEP_KEYS[qIdx+1]);}
@@ -1603,7 +1781,7 @@ function T3CustomersScript({inputs,setFlag,onNext,onBack}){
         </div>
       ))}
 
-      <BottomNav onBack={onBack} onNext={()=>{if(!scripts&&!loading){isEmail?generate(offer,phone,bizName,trade):generate();}else{setFlag("t3_customers_done",true);onNext();}}}/>
+      <BottomNav onBack={()=>setStep(isEmail?EMAIL_STEP_KEYS[EMAIL_STEP_KEYS.length-1]:"learn")} onNext={()=>{if(!scripts&&!loading){isEmail?generate(offer,phone,bizName,trade):generate();}else{setFlag("t3_customers_done",true);onNext();}}}/>
     </div>
   );
 }
@@ -3044,40 +3222,111 @@ function T3GoalComplete({flags,setFlag,onNavigate,onBack}){
 // ASSESSMENT
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ── TRADE BENCHMARK LOOKUP ────────────────────────────────────────────────────
+// Maps trade keywords → industry bucket + CLV benchmarks from the PDF
+// CLV "good operator target" = upper-third of the range from the research
+// avgJob benchmark = typical transaction value for that trade (Angi data)
+function getTraideBenchmarks(tradeStr) {
+  const t = (tradeStr || "").toLowerCase();
+  // Hybrid trades
+  if (["appliance","washer","dryer","dishwasher","refriger"].some(k=>t.includes(k)))
+    return {bucket:"occasional", clvTarget:1500, avgJobBenchmark:250, clvLabel:"Appliance Repair"};
+  if (["hvac","heat","cool","air conditioning","furnace","boiler"].some(k=>t.includes(k)))
+    return {bucket:"hybrid", clvTarget:18000, avgJobBenchmark:650, clvLabel:"HVAC"};
+  if (["plumb","drain","pipe","water heat","sewer"].some(k=>t.includes(k)))
+    return {bucket:"hybrid", clvTarget:7200, avgJobBenchmark:450, clvLabel:"Plumbing"};
+  if (["electr","wiring","panel","generator"].some(k=>t.includes(k)))
+    return {bucket:"hybrid", clvTarget:5700, avgJobBenchmark:500, clvLabel:"Electrical"};
+  if (["gutter","eavestrough"].some(k=>t.includes(k)))
+    return {bucket:"hybrid", clvTarget:2800, avgJobBenchmark:180, clvLabel:"Gutters"};
+  if (["garage door","overhead door"].some(k=>t.includes(k)))
+    return {bucket:"hybrid", clvTarget:2700, avgJobBenchmark:600, clvLabel:"Garage Door"};
+  if (["handyman","handman","general repair"].some(k=>t.includes(k)))
+    return {bucket:"hybrid", clvTarget:8200, avgJobBenchmark:400, clvLabel:"Handyman"};
+  // Recurring trades
+  if (["pest","extermina","termite","mosquito"].some(k=>t.includes(k)))
+    return {bucket:"recurring", clvTarget:12600, avgJobBenchmark:120, clvLabel:"Pest Control"};
+  if (["lawn","landscap","mow","turf","weed"].some(k=>t.includes(k)))
+    return {bucket:"recurring", clvTarget:37500, avgJobBenchmark:123, clvLabel:"Lawn Care"};
+  if (["clean","maid","housekeep","janitorial"].some(k=>t.includes(k)))
+    return {bucket:"recurring", clvTarget:27700, avgJobBenchmark:175, clvLabel:"Cleaning"};
+  if (["pool","spa","hot tub"].some(k=>t.includes(k)))
+    return {bucket:"recurring", clvTarget:47000, avgJobBenchmark:225, clvLabel:"Pool Service"};
+  if (["snow","ice remov","plow"].some(k=>t.includes(k)))
+    return {bucket:"recurring", clvTarget:27400, avgJobBenchmark:127, clvLabel:"Snow Removal"};
+  if (["carpet","upholstery","rug clean"].some(k=>t.includes(k)))
+    return {bucket:"occasional", clvTarget:5400, avgJobBenchmark:400, clvLabel:"Carpet Cleaning"};
+  // One-time trades
+  if (["roof","shingle","skylight"].some(k=>t.includes(k)))
+    return {bucket:"one-time", clvTarget:15000, avgJobBenchmark:9535, clvLabel:"Roofing"};
+  if (["paint","stain","coating"].some(k=>t.includes(k)))
+    return {bucket:"one-time", clvTarget:11250, avgJobBenchmark:3250, clvLabel:"Painting"};
+  if (["floor","tile","hardwood","laminate","vinyl"].some(k=>t.includes(k)))
+    return {bucket:"one-time", clvTarget:4852, avgJobBenchmark:3000, clvLabel:"Flooring"};
+  if (["window","door replace","sliding door"].some(k=>t.includes(k)))
+    return {bucket:"one-time", clvTarget:8900, avgJobBenchmark:7500, clvLabel:"Windows & Doors"};
+  if (["siding","cladding","stucco","exterior"].some(k=>t.includes(k)))
+    return {bucket:"one-time", clvTarget:13300, avgJobBenchmark:11600, clvLabel:"Siding"};
+  if (["fenc","gate","railing"].some(k=>t.includes(k)))
+    return {bucket:"one-time", clvTarget:3600, avgJobBenchmark:3300, clvLabel:"Fencing"};
+  if (["junk","haul","demo","remov"].some(k=>t.includes(k)))
+    return {bucket:"occasional", clvTarget:1900, avgJobBenchmark:380, clvLabel:"Junk Removal"};
+  if (["locksmith","lock","key"].some(k=>t.includes(k)))
+    return {bucket:"hybrid", clvTarget:3000, avgJobBenchmark:200, clvLabel:"Locksmith"};
+  if (["pressure wash","power wash"].some(k=>t.includes(k)))
+    return {bucket:"recurring", clvTarget:5000, avgJobBenchmark:350, clvLabel:"Pressure Washing"};
+  // Fallback — general home services
+  return {bucket:"hybrid", clvTarget:8000, avgJobBenchmark:500, clvLabel:"Home Services"};
+}
+
+// Gold standards:
+// Missed calls: 0% (perfect coverage)
+// Close rate: 60% (same-day or on-site presentation)
+// CLV: trade-specific upper-third target from getTraideBenchmarks
+
 function calcAssessmentScore(data) {
   const tc = data.tc || 10;
-  const mc = data.mc || 3;
+  const mc = data.mc || 0;
   const missedRate = tc > 0 ? mc / tc : 0;
-  const handlingBonus = data.handling === "csr" ? 10 : data.handling === "service" ? 5 : 0;
+  // MISSED CALLS: grade against 0% gold standard
+  // 0% = 100 pts, 10% = 85, 20% = 65, 30% = 45, 40%+ = 20 or less
+  // Plus handling bonus for having a coverage solution
+  const handlingBonus = data.handling === "csr" ? 5 : data.handling === "service" ? 8 : 0;
   const callScore = Math.round(Math.max(0, Math.min(100,
-    (1 - missedRate) * 70 + handlingBonus + (missedRate === 0 ? 20 : 0)
+    (1 - missedRate) * 92 + handlingBonus
   )));
+
+  // ESTIMATES: grade against 60% close rate gold standard
+  // 60%+ = full marks for close rate component; scaled below
   const closeRate = data.closeRate || 30;
   const openEst   = data.openEstimates || 10;
   const avgJob    = data.avgJobSize || 500;
-  const pipeline  = data.usesPipeline ? 15 : 0;
+  const pipeline  = data.usesPipeline ? 12 : 0;
+  const closeRateScore = Math.min(60, closeRate) / 60 * 60; // 60pts max, full at 60%
+  const openEstScore   = openEst > 0 ? Math.min(18, openEst * 1.8) : 0;
+  const jobSizeScore   = avgJob > 2000 ? 10 : avgJob > 1000 ? 8 : avgJob > 500 ? 5 : 2;
   const closeScore = Math.round(Math.max(0, Math.min(100,
-    (closeRate / 100) * 50 +
-    (openEst > 0 ? Math.min(20, openEst * 2) : 0) +
-    (avgJob > 1000 ? 15 : avgJob > 500 ? 10 : 5) +
-    pipeline
+    closeRateScore + openEstScore + jobSizeScore + pipeline
   )));
+
+  // LTV: grade against trade-specific CLV target (upper-third)
+  const bench = getTraideBenchmarks(data.trade || "");
   const custCount   = data.customerCount || 200;
   const jobsPerYear = data.jobsPerYear || 1;
-  const drip        = data.hasDripCampaign ? 20 : 0;
+  const drip        = data.hasDripCampaign ? 15 : 0;
+  const actualCLV   = custCount * jobsPerYear * avgJob;
+  const clvRatio    = Math.min(1, actualCLV / bench.clvTarget);
   const ltvScore = Math.round(Math.max(0, Math.min(100,
-    (jobsPerYear >= 2 ? 40 : jobsPerYear >= 1.5 ? 30 : jobsPerYear >= 1 ? 20 : 10) +
-    (custCount >= 500 ? 25 : custCount >= 200 ? 20 : custCount >= 100 ? 15 : 10) +
-    Math.min(15, custCount / 50) +
-    drip
+    clvRatio * 75 + drip + (jobsPerYear >= 2 ? 10 : jobsPerYear >= 1 ? 5 : 0)
   )));
+
   const overall = Math.round((callScore * 0.4 + closeScore * 0.35 + ltvScore * 0.25));
   return { overall, callScore, closeScore, ltvScore };
 }
 
 function scoreGrade(n) {
-  if (n >= 80) return { grade: "A", label: "Excellent",       color: "#10B981", bg: "#F0FDF4", border: "#6EE7B7" };
-  if (n >= 65) return { grade: "B", label: "Good",            color: "#0055FF", bg: "#F0F5FF", border: "#C8D8FF" };
+  if (n >= 85) return { grade: "A", label: "Excellent",       color: "#10B981", bg: "#F0FDF4", border: "#6EE7B7" };
+  if (n >= 70) return { grade: "B", label: "Good",            color: "#0055FF", bg: "#F0F5FF", border: "#C8D8FF" };
   if (n >= 50) return { grade: "C", label: "Needs Work",      color: "#B8860B", bg: "#FFFBEB", border: "#FCEFC7" };
   if (n >= 30) return { grade: "D", label: "Falling Behind",  color: "#C05000", bg: "#FFF5EB", border: "#FFDDB8" };
   return           { grade: "F", label: "Critical",           color: "#CC2200", bg: "#FFF0EE", border: "#FFCDC8" };
@@ -3301,13 +3550,12 @@ function ScoreBar({label,score,icon}){
 
 function AssessmentScreen({inputs,setInputs,onBack,onNext,jumpTo,onJumpConsumed}){
   const s=useSp();
-  const STEPS_LIST=["plinko","call_handling","call_handling_detail","call_config","call_sliders","estimates","ltv","results"];
+  const STEPS_LIST=["plinko","trade_pick","call_handling","call_handling_detail","call_config","call_sliders","estimates","ltv","results"];
   const [step,setStep]=useState(inputs.assessmentStep||"plinko");
   useEffect(()=>{
     if(jumpTo){
       if(jumpTo==="__plinko__"){
         setStep("plinko");
-        // Clear call-related state so stale values don't bleed through
         setHandling(null);
         setMc(3);
         setTc(10);
@@ -3321,6 +3569,10 @@ function AssessmentScreen({inputs,setInputs,onBack,onNext,jumpTo,onJumpConsumed}
       onJumpConsumed&&onJumpConsumed();
     }
   },[jumpTo]);
+
+  // Always ask trade in assessment — pre-selected if already set from Setup
+  // This ensures benchmarks are always confirmed, not silently inherited
+  const afterPlinko="trade_pick";
   const [tc,setTc]=useState(inputs.tc||10);
   const [mc,setMc]=useState(()=>{
     // If they have a saved value, use it
@@ -3361,14 +3613,14 @@ function AssessmentScreen({inputs,setInputs,onBack,onNext,jumpTo,onJumpConsumed}
   const pctBg=missedRate>=40?"#FFF0EE":missedRate>=20?"#FFFBEB":missedRate===0?"#F0FDF4":"#EBF7EF";
   const pctBrd=missedRate>=40?"#FFCDC8":missedRate>=20?"#FCEFC7":missedRate===0?"#6EE7B7":"#B8DEC6";
 
-  const nonPlinkoSteps=["call_handling","call_handling_detail","call_config","call_sliders","estimates","ltv"];
+  const nonPlinkoSteps=["trade_pick","call_handling","call_handling_detail","call_config","call_sliders","estimates","ltv"];
   const stepIdx=nonPlinkoSteps.indexOf(step);
   const pct=stepIdx>=0?Math.round(((stepIdx+1)/nonPlinkoSteps.length)*100):0;
 
   const persist=(nextStep)=>setInputs(p=>({...p,tc,mc,handling,selfBehavior,csrCost,answerSolution,csrAiConfig,hcpAssistConfig,closeRate,openEstimates,avgJobSize,usesPipeline,customerCount,jobsPerYear,hasDripCampaign,assessmentStep:nextStep||step,assessmentComplete:nextStep==="results"||p.assessmentComplete}));
   const goNext=(next)=>{persist(next);setStep(next);};
 
-  const scores=calcAssessmentScore({tc,mc,handling,closeRate,openEstimates,avgJobSize,usesPipeline,customerCount,jobsPerYear,hasDripCampaign});
+  const scores=calcAssessmentScore({tc,mc,handling,closeRate,openEstimates,avgJobSize,usesPipeline,customerCount,jobsPerYear,hasDripCampaign,trade:inputs.trade||""});
 
   const ProgressBar=()=>stepIdx>=0?(
     <div style={{marginBottom:20}}>
@@ -3389,9 +3641,23 @@ function AssessmentScreen({inputs,setInputs,onBack,onNext,jumpTo,onJumpConsumed}
     <div>
       <SectionHeader emoji="🔍" title={s?"Evaluación del Negocio":"Business Assessment"}
         subtitle={s?"Empecemos. Primero, adivina cuánto estás perdiendo cada mes.":"Let's start. First, guess how much revenue you're losing each month."}/>
-      <AssessmentPlinko onNext={()=>setStep("call_handling")}/>
+      <AssessmentPlinko onNext={()=>setStep(afterPlinko)}/>
     </div>
   );
+
+  // ── TRADE PICK — only shown when trade not set in Setup ─────────────────────
+  if(step==="trade_pick"){
+    return (
+      <div>
+        <ProgressBar/>
+        <SectionHeader emoji="🔧"
+          title={s?"¿Cuál es tu oficio?":"What's your trade?"}
+          subtitle={s?"Esto calibra tus benchmarks — HVAC tiene objetivos diferentes que pintura.":"This calibrates your benchmarks — HVAC has different targets than painting."}/>
+        <TradePickWidget inputs={inputs} setInputs={setInputs} s={s}/>
+        <BottomNav onBack={()=>setStep("plinko")} onNext={()=>goNext("call_handling")} nextDisabled={!inputs.trade}/>
+      </div>
+    );
+  }
 
   if(step==="call_handling") return (
     <div>
@@ -3420,7 +3686,7 @@ function AssessmentScreen({inputs,setInputs,onBack,onNext,jumpTo,onJumpConsumed}
           );
         })}
       </div>
-      <BottomNav onBack={()=>setStep("plinko")} onNext={()=>{persist();setStep("call_handling_detail");}} nextDisabled={!handling}/>
+      <BottomNav onBack={()=>setStep("trade_pick")} onNext={()=>{persist();setStep("call_handling_detail");}} nextDisabled={!handling}/>
     </div>
   );
 
@@ -3624,6 +3890,12 @@ function AssessmentScreen({inputs,setInputs,onBack,onNext,jumpTo,onJumpConsumed}
           <AssessSlider label={s?"Llamadas perdidas / semana":"Missed calls / week"}
             value={mc} min={0} max={tc} step={1} onChange={setMc}
             leftLabel="0" rightLabel={String(tc)}/>
+          <div style={{display:"flex",alignItems:"center",gap:7,marginTop:2}}>
+            <div style={{width:8,height:8,borderRadius:"50%",background:GREEN,flexShrink:0}}/>
+            <span style={{fontSize:11,fontWeight:700,color:GREEN}}>
+              {s?"Estándar de oro: 0 llamadas perdidas (0%)":"Gold standard: 0 missed calls (0%)"}
+            </span>
+          </div>
         </div>
 
       </Card>
@@ -3641,6 +3913,12 @@ function AssessmentScreen({inputs,setInputs,onBack,onNext,jumpTo,onJumpConsumed}
           hint={s?"En HCP: Reportes → Cotizaciones → tasa de cierre":"In HCP: Reports → Estimates → close rate"}
           value={closeRate} min={0} max={100} step={1} onChange={setCloseRate}
           formatVal={v=>v+"%"} leftLabel="0%" rightLabel="100%"/>
+        <div style={{display:"flex",alignItems:"center",gap:7,marginTop:-12,marginBottom:16}}>
+          <div style={{width:8,height:8,borderRadius:"50%",background:GREEN,flexShrink:0}}/>
+          <span style={{fontSize:11,fontWeight:700,color:GREEN}}>
+            {s?"Estándar de oro: 60% (presentación en persona o el mismo día)":"Gold standard: 60% (on-site or same-day presentation)"}
+          </span>
+        </div>
         <div style={{borderTop:"1px solid "+GRAY100,paddingTop:16}}>
           <AssessSlider label={s?"Cotizaciones abiertas de menos de 30 días":"Open estimates under 30 days old"}
             hint={s?"En HCP: Cotizaciones → filtrar por Enviada, últimos 30 días":"In HCP: Estimates → filter Sent, last 30 days"}
@@ -3664,6 +3942,24 @@ function AssessmentScreen({inputs,setInputs,onBack,onNext,jumpTo,onJumpConsumed}
               </div>
             </div>
           )}
+          {(()=>{
+            const bench=getTraideBenchmarks(inputs.trade||"");
+            const isLow=avgJobSize<bench.avgJobBenchmark*0.75;
+            const isHigh=avgJobSize>=bench.avgJobBenchmark;
+            return (
+              <div style={{display:"flex",alignItems:"center",gap:7,marginTop:6}}>
+                <div style={{width:8,height:8,borderRadius:"50%",background:isHigh?GREEN:isLow?"#CC2200":"#B8860B",flexShrink:0}}/>
+                <span style={{fontSize:11,fontWeight:700,color:isHigh?GREEN:isLow?"#CC2200":"#B8860B"}}>
+                  {isHigh
+                    ?(s?`Bien — por encima del promedio de la industria ($${bench.avgJobBenchmark.toLocaleString()}) para ${bench.clvLabel}`:`Above industry avg ($${bench.avgJobBenchmark.toLocaleString()}) for ${bench.clvLabel}`)
+                    :isLow
+                      ?(s?`Posible área de mejora — el promedio de la industria para ${bench.clvLabel} es ~$${bench.avgJobBenchmark.toLocaleString()}`:`Potential pricing gap — industry avg for ${bench.clvLabel} is ~$${bench.avgJobBenchmark.toLocaleString()}`)
+                      :(s?`Cerca del promedio de la industria ($${bench.avgJobBenchmark.toLocaleString()}) para ${bench.clvLabel}`:`Near industry avg ($${bench.avgJobBenchmark.toLocaleString()}) for ${bench.clvLabel}`)
+                  }
+                </span>
+              </div>
+            );
+          })()}
         </div>
         <div style={{borderTop:"1px solid "+GRAY100,paddingTop:16}}>
           <YesNoToggle label={s?"¿Usas el Pipeline de Housecall Pro?":"Are you using Housecall Pro Pipeline?"}
@@ -3719,6 +4015,17 @@ function AssessmentScreen({inputs,setInputs,onBack,onNext,jumpTo,onJumpConsumed}
     const ltvOpp=Math.round(customerCount*jobsPerYear*avgJobSize*0.02);
     const totalOpp=monthlyLeak+openOpp+ltvOpp;
 
+    // Trade benchmarks for gold standard display
+    const bench=getTraideBenchmarks(inputs.trade||"");
+    const actualCLV=Math.round(customerCount*jobsPerYear*avgJobSize);
+    const clvGap=Math.max(0,bench.clvTarget-actualCLV);
+    const missedRatePct=tc>0?Math.round((mc/tc)*100):0;
+    const closeRateGap=Math.max(0,60-closeRate);
+    // Dollar gap from missed calls gold standard
+    const callGapDollar=Math.round((mc*52/12)*(avgJobSize*(closeRate/100)));
+    // Dollar gap from close rate gold standard
+    const closeGapDollar=Math.round(openEstimates*avgJobSize*(60/100 - closeRate/100));
+
     const verdicts={
       A:s?"Estás en excelente forma. Estás por encima del 80% de los Pros.":"You're in excellent shape. You're ahead of 80% of Pros.",
       B:s?"Buen trabajo. Hay oportunidades claras para capturar más.":"Good work. There are clear opportunities to capture more revenue.",
@@ -3731,9 +4038,27 @@ function AssessmentScreen({inputs,setInputs,onBack,onNext,jumpTo,onJumpConsumed}
     const orbBorderColor=gradeColors[og.grade]||"rgba(255,255,255,0.3)";
 
     const areaBars=[
-      {label:s?"Llamadas Perdidas":"Missed Calls",    icon:"📞", score:callScore},
-      {label:s?"Estimados Abiertos":"Open Estimates",  icon:"📋", score:closeScore},
-      {label:s?"LTV del Cliente":"Customer LTV",       icon:"👥", score:ltvScore},
+      {
+        label:s?"Llamadas Perdidas":"Missed Calls", icon:"📞", score:callScore,
+        goldStd:s?"0% llamadas perdidas":"0% missed calls",
+        yourVal:missedRatePct+"%",
+        atGold:missedRatePct===0,
+        gapDollar:callGapDollar>0?"$"+callGapDollar.toLocaleString()+s?"/mo":"/mo":null,
+      },
+      {
+        label:s?"Estimados Abiertos":"Open Estimates", icon:"📋", score:closeScore,
+        goldStd:s?"60% tasa de cierre":"60% close rate",
+        yourVal:closeRate+"%",
+        atGold:closeRate>=60,
+        gapDollar:closeGapDollar>0?"$"+closeGapDollar.toLocaleString():null,
+      },
+      {
+        label:s?"LTV del Cliente":"Customer LTV", icon:"👥", score:ltvScore,
+        goldStd:`$${bench.clvTarget.toLocaleString()} CLV (${bench.clvLabel})`,
+        yourVal:"$"+actualCLV.toLocaleString(),
+        atGold:actualCLV>=bench.clvTarget,
+        gapDollar:clvGap>0?"$"+clvGap.toLocaleString()+" gap":null,
+      },
     ];
 
     // Ranked worst-to-best with coaching lines per area
@@ -3837,7 +4162,7 @@ function AssessmentScreen({inputs,setInputs,onBack,onNext,jumpTo,onJumpConsumed}
           {areaBars.map((ab,i)=>{
             const g=scoreGrade(ab.score);
             return (
-              <div key={i} style={{marginBottom:i<areaBars.length-1?12:0}}>
+              <div key={i} style={{marginBottom:i<areaBars.length-1?14:0}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:5}}>
                   <div style={{display:"flex",alignItems:"center",gap:7}}>
                     <span style={{fontSize:13}}>{ab.icon}</span>
@@ -3853,6 +4178,20 @@ function AssessmentScreen({inputs,setInputs,onBack,onNext,jumpTo,onJumpConsumed}
                   <div style={{height:"100%",borderRadius:99,background:g.color,
                     width:ab.score+"%",transition:"width 1.1s ease"}}/>
                 </div>
+                {/* Gold standard vs your number */}
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:5}}>
+                  <span style={{fontSize:10,fontWeight:600,color:"rgba(255,255,255,0.35)"}}>
+                    {s?"Tú:":"You:"} <span style={{color:ab.atGold?"#10B981":"rgba(255,255,255,0.6)",fontWeight:700}}>{ab.yourVal}</span>
+                  </span>
+                  <span style={{fontSize:10,fontWeight:700,color:"rgba(16,185,129,0.8)"}}>
+                    ⭐ {s?"Estándar de oro:":"Gold std:"} {ab.goldStd}
+                  </span>
+                </div>
+                {ab.gapDollar&&!ab.atGold&&(
+                  <div style={{fontSize:10,fontWeight:700,color:"#FCA5A5",textAlign:"right",marginTop:1}}>
+                    ↑ {ab.gapDollar} {s?"en juego":"at stake"}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -3940,6 +4279,22 @@ function AssessmentScreen({inputs,setInputs,onBack,onNext,jumpTo,onJumpConsumed}
                       border:"1px solid "+g.border}}>
                       {g.label} — {item.score}/100
                     </span>
+                  </div>
+                  {/* Gold standard vs your value */}
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6,flexWrap:"wrap"}}>
+                    <span style={{fontSize:11,fontWeight:700,color:GRAY600}}>
+                      {s?"Tú:":"You:"} <span style={{color:item.atGold?GREEN:"#CC2200",fontWeight:800}}>{item.yourVal}</span>
+                    </span>
+                    <span style={{color:GRAY200,fontSize:11}}>|</span>
+                    <span style={{fontSize:11,fontWeight:700,color:GREEN}}>
+                      ⭐ {s?"Meta:":"Target:"} {item.goldStd}
+                    </span>
+                    {item.gapDollar&&!item.atGold&&(
+                      <span style={{fontSize:11,fontWeight:800,color:"#CC2200",
+                        background:"#FFF0EE",borderRadius:5,padding:"1px 7px"}}>
+                        {item.gapDollar} {s?"en juego":"at stake"}
+                      </span>
+                    )}
                   </div>
                   <div style={{fontSize:13,color:GRAY600,lineHeight:1.6}}>
                     <strong style={{color:NAVY}}>{boldPart}</strong>
@@ -4131,6 +4486,139 @@ function QuestionStepper({titleEmoji,title,titleEs,steps,onDone,onBack}){
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SHARED: TradePickWidget — multi-select + primary picker
+// inputs.trades = string[] of all selected trades
+// inputs.trade  = the primary (used for benchmarks + scripts, unchanged everywhere)
+// If only 1 selected → auto-primary. If 2+ → shows primary picker after selection.
+// ─────────────────────────────────────────────────────────────────────────────
+const TRADE_GROUPS_DEF=[
+  {group:"Mechanical / Systems", groupEs:"Mecánico / Sistemas",
+    trades:["HVAC","Plumbing","Electrical","Garage Door","Appliance Repair","Locksmith"]},
+  {group:"Recurring / Maintenance", groupEs:"Recurrente / Mantenimiento",
+    trades:["Lawn Care","Pest Control","House Cleaning","Pool Service","Snow Removal","Pressure Washing"]},
+  {group:"One-Time Projects", groupEs:"Proyecto Único",
+    trades:["Roofing","Painting","Flooring","Windows & Doors","Siding","Fencing"]},
+  {group:"Other", groupEs:"Otro",
+    trades:["Handyman","Carpet Cleaning","Gutter Cleaning","Junk Removal"]},
+];
+const ALL_LISTED_TRADES=TRADE_GROUPS_DEF.flatMap(g=>g.trades);
+
+function TradePickWidget({inputs,setInputs,s}){
+  const selected=inputs.trades||[];
+  const primary=inputs.trade||"";
+  const isCustom=primary&&!ALL_LISTED_TRADES.includes(primary)&&!selected.includes(primary);
+  const showPrimaryPicker=selected.length>1;
+
+  function toggleTrade(t){
+    const next=selected.includes(t)?selected.filter(x=>x!==t):[...selected,t];
+    // If deselecting the current primary, clear primary
+    const newPrimary=next.length===1?next[0]:next.includes(primary)?primary:"";
+    setInputs(p=>({...p,trades:next,trade:newPrimary}));
+  }
+
+  function setPrimary(t){
+    setInputs(p=>({...p,trade:t}));
+  }
+
+  return (
+    <div>
+      {/* Hint */}
+      <div style={{fontSize:12,color:GRAY600,marginBottom:14,lineHeight:1.6,fontWeight:600}}>
+        {s?"Selecciona todos los que apliquen. Si tienes más de uno, te pediremos tu servicio principal.":"Select all that apply. If you have more than one, we'll ask which is primary."}
+      </div>
+
+      {/* Trade grid */}
+      {TRADE_GROUPS_DEF.map((grp,gi)=>(
+        <div key={gi} style={{marginBottom:16}}>
+          <div style={{fontSize:10,fontWeight:700,color:GRAY400,textTransform:"uppercase",
+            letterSpacing:"1.5px",marginBottom:8}}>{s?grp.groupEs:grp.group}</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+            {grp.trades.map(t=>{
+              const sel=selected.includes(t);
+              const isPrim=primary===t&&sel;
+              return (
+                <button key={t} onClick={()=>toggleTrade(t)}
+                  style={{
+                    padding:"10px 8px",borderRadius:10,
+                    border:"2px solid "+(isPrim?YELLOW:sel?NAVY:GRAY200),
+                    background:sel?NAVY:WHITE,
+                    color:sel?WHITE:NAVY,
+                    fontWeight:sel?800:600,fontSize:12,cursor:"pointer",
+                    fontFamily:"inherit",transition:"all 0.12s",
+                    textAlign:"center",lineHeight:1.3,
+                    position:"relative",
+                  }}>
+                  {t}
+                  {isPrim&&<div style={{fontSize:9,color:YELLOW,fontWeight:800,marginTop:2}}>★ Primary</div>}
+                  {sel&&!isPrim&&<div style={{fontSize:9,color:"rgba(255,255,255,0.6)",fontWeight:700,marginTop:2}}>✓</div>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+
+      {/* Custom trade */}
+      <div style={{borderTop:"1px solid "+GRAY100,paddingTop:14,marginBottom:16}}>
+        <div style={{fontSize:10,fontWeight:700,color:GRAY400,textTransform:"uppercase",
+          letterSpacing:"1.5px",marginBottom:8}}>{s?"Otro / Personalizado":"Other / Custom"}</div>
+        <input type="text"
+          value={isCustom?primary:""}
+          onChange={e=>{
+            const v=e.target.value;
+            const newTrades=v?[...selected.filter(x=>ALL_LISTED_TRADES.includes(x)),v]:selected.filter(x=>ALL_LISTED_TRADES.includes(x));
+            setInputs(p=>({...p,trades:newTrades,trade:newTrades.length===1?newTrades[0]:p.trade}));
+          }}
+          placeholder={s?"Escribe tu oficio...":"Type your trade..."}
+          style={{width:"100%",padding:"11px 14px",
+            border:"2px solid "+(isCustom?NAVY:GRAY200),
+            borderRadius:10,fontFamily:"inherit",fontSize:14,color:NAVY,
+            outline:"none",background:WHITE,boxSizing:"border-box"}}/>
+      </div>
+
+      {/* Primary picker — only appears when 2+ selected and no primary yet */}
+      {showPrimaryPicker&&(
+        <div style={{
+          background:"#FEF9EC",border:"2px solid "+YELLOW,
+          borderRadius:14,padding:"16px 18px",
+        }}>
+          <div style={{fontSize:12,fontWeight:800,color:NAVY,marginBottom:10}}>
+            ⭐ {s?"¿Cuál es tu servicio principal?":"Which is your primary trade?"}
+          </div>
+          <div style={{fontSize:12,color:GRAY600,marginBottom:12,lineHeight:1.5}}>
+            {s?"Este se usará para tus benchmarks y guiones.":"This drives your benchmarks and scripts."}
+          </div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+            {selected.map(t=>(
+              <button key={t} onClick={()=>setPrimary(t)}
+                style={{
+                  padding:"9px 16px",borderRadius:99,
+                  border:"2px solid "+(primary===t?NAVY:GRAY200),
+                  background:primary===t?NAVY:WHITE,
+                  color:primary===t?WHITE:NAVY,
+                  fontWeight:primary===t?800:600,
+                  fontSize:13,cursor:"pointer",fontFamily:"inherit",
+                  transition:"all 0.12s",
+                }}>
+                {primary===t?"★ ":""}{t}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Selected summary */}
+      {selected.length>0&&primary&&(
+        <div style={{marginTop:12,fontSize:12,color:GRAY600,fontWeight:600}}>
+          {s?"Seleccionado:":"Selected:"} <strong style={{color:NAVY}}>{selected.join(", ")}</strong>
+          {selected.length>1&&<span style={{color:GRAY400}}> · {s?"Principal:":"Primary:"} <strong style={{color:NAVY}}>{primary}</strong></span>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // SCREEN: Setup — one question at a time
 // ─────────────────────────────────────────────────────────────────────────────
 function SetupScreen({inputs,setInputs,onNext,onBack}){
@@ -4169,10 +4657,10 @@ function SetupScreen({inputs,setInputs,onNext,onBack}){
     },
     {
       label:"What's your trade?", labelEs:"¿Cuál es tu oficio?",
-      hint:"Be specific — this appears in every script we generate.",
-      hintEs:"Sé específico — aparece en cada guión que generamos.",
+      hint:"Select all that apply — we'll benchmark each one.",
+      hintEs:"Selecciona todos los que apliquen — mediremos cada uno.",
       canNext:!!(inputs.trade),
-      render:(sp)=><FormField label="" value={inputs.trade} onChange={v=>setInputs(p=>({...p,trade:v}))} placeholder="e.g. HVAC, Plumbing, Electrical"/>,
+      render:(sp)=><TradePickWidget inputs={inputs} setInputs={setInputs} s={sp}/>,
     },
     {
       label:"What city do you serve?", labelEs:"¿Qué ciudad atiendes?",
