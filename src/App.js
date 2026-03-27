@@ -1260,6 +1260,7 @@ function T3CustomersScript({inputs,setFlag,onNext,onBack}){
         trade:tradeVal||trade,
         t3EmailOffer:offerVal||offer,
         t3EmailPhone:phoneVal||phone,
+        t3CustomerBlastType:blastType, // always use local state — inputs prop may be stale
       };
       const res=await genTop3Script(inp,"t3_customers",s);
       setScripts(res);
@@ -2742,7 +2743,7 @@ function T3CallsFix({inputs,onNext,onBack}){
 
   const weeklyLostRevenue=Math.round(mc*avgJobSize*(closeRate/100));
 
-  // All hooks must be declared before conditional returns
+  // All hooks before conditional returns
   const [showHowTo,setShowHowTo]=useState(false);
   const [showRollover,setShowRollover]=useState(false);
 
@@ -2835,131 +2836,117 @@ function T3CallsFix({inputs,onNext,onBack}){
     );
   }
 
-  // ── NO SOLUTION YET — differentiated cards + rollover path ──
+  // ── NO SOLUTION YET — side-by-side cards ──
   const showsRollover=handling==="self"||handling==="csr";
   return (
     <div>
-      <SectionHeader emoji="⚙️"
-        title={s?"La Solución — Cobertura 24/7":"The Fix — 24/7 Coverage"}/>
-      <div style={{background:NAVY,borderRadius:16,padding:"18px 20px",marginBottom:16,textAlign:"center"}}>
-        <div style={{fontSize:15,fontWeight:900,color:WHITE,lineHeight:1.5,marginBottom:6}}>
-          {s?"Los mejores operadores no contestan cada llamada ellos mismos."
-            :"The best operators don't answer every call themselves."}
-        </div>
-        <div style={{fontSize:13,color:"rgba(255,255,255,0.6)",lineHeight:1.6}}>
-          {s?"Tienen un sistema que contesta, reserva y pone al cliente en su calendario — antes de que cuelguen."
-            :"They have a system that answers, books, and puts the customer on their calendar — before they hang up."}
-        </div>
-      </div>
-      <div style={{background:"#F0FDF4",border:"2px solid #6EE7B7",borderRadius:16,padding:"16px 18px",marginBottom:16}}>
-        <div style={{fontSize:11,fontWeight:800,color:"#065F46",textTransform:"uppercase",letterSpacing:"1.5px",marginBottom:6}}>
-          ★ {s?"La configuración que marca la diferencia":"The setting that makes the difference"}
-        </div>
-        <div style={{fontSize:16,fontWeight:900,color:"#065F46",marginBottom:6}}>Good-to-Go Scheduling</div>
-        <div style={{fontSize:13,color:"#047857",lineHeight:1.7}}>
-          {s?"El cliente queda reservado antes de colgar. En ese momento, deja de buscar competidores. No hay ventana. No hay seguimiento. Solo un trabajo en tu calendario."
-            :"The customer gets booked before they hang up. At that moment, they stop shopping competitors. No window. No follow-up. Just a job on your calendar."}
-        </div>
-      </div>
-      <div style={{fontSize:11,fontWeight:700,color:GRAY400,textTransform:"uppercase",letterSpacing:"1.5px",marginBottom:10}}>
-        {s?"DOS CAMINOS PARA LLEGAR AHÍ":"TWO WAYS TO GET THERE"}
-      </div>
-      {/* CSR AI */}
-      <div style={{background:WHITE,border:"2px solid "+GRAY200,borderRadius:16,padding:"18px",marginBottom:10}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-          <span style={{fontSize:28}}>🤖</span>
+      <SectionHeader emoji="⚙️" title={s?"La Solución — Cobertura 24/7":"The Fix — 24/7 Coverage"}/>
+
+      {/* Good-to-Go — compact */}
+      <div style={{background:"#F0FDF4",border:"2px solid #6EE7B7",borderRadius:14,
+        padding:"14px 16px",marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontSize:22}}>📅</span>
           <div>
-            <div style={{fontWeight:900,color:NAVY,fontSize:16}}>CSR AI</div>
-            <span style={{background:"#0055FF",color:WHITE,fontWeight:800,fontSize:10,borderRadius:6,padding:"2px 8px"}}>DIGITAL</span>
+            <div style={{fontSize:14,fontWeight:900,color:"#065F46"}}>Good-to-Go Scheduling</div>
+            <div style={{fontSize:12,color:"#047857",lineHeight:1.5,marginTop:2}}>
+              {s?"Reservado antes de colgar. Dejan de buscar competidores al instante."
+                :"Booked before they hang up. They stop shopping competitors the moment it's on your calendar."}
+            </div>
           </div>
-        </div>
-        <div style={{fontSize:14,color:GRAY600,lineHeight:1.7,marginBottom:10}}>
-          {s?"IA que contesta, reserva y crea el perfil del cliente — sin intervención humana. Siempre activo, sin costo de personal adicional."
-            :"AI that answers, books, and creates the customer profile — no human needed. Always-on, no additional staff cost."}
-        </div>
-        <div style={{padding:"8px 12px",background:GRAY50,borderRadius:8,fontSize:12,color:NAVY,fontWeight:700,marginBottom:6}}>
-          {s?"Mejor si: quieres cobertura 24/7 sin pagar a nadie extra":"Best if: you want 24/7 coverage without paying someone extra"}
-        </div>
-        <div style={{padding:"6px 12px",background:"#EFF6FF",borderRadius:8,fontSize:12,color:"#0055FF",fontWeight:700}}>
-          📍 {s?"Actívalo en: Configuración → Equipos y Permisos":"Activate in: Settings → Teams and Permissions"}
         </div>
       </div>
-      {/* HCP Assist */}
-      <div style={{background:WHITE,border:"2px solid "+GRAY200,borderRadius:16,padding:"18px",marginBottom:10}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-          <span style={{fontSize:28}}>👥</span>
-          <div>
-            <div style={{fontWeight:900,color:NAVY,fontSize:16}}>HCP Assist</div>
-            <span style={{background:"#2E8B57",color:WHITE,fontWeight:800,fontSize:10,borderRadius:6,padding:"2px 8px"}}>
-              {s?"AGENTES REALES":"LIVE AGENTS"}
-            </span>
+
+      {/* Side-by-side product cards */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+
+        {/* CSR AI */}
+        <div style={{background:WHITE,border:"2px solid "+GRAY200,borderRadius:14,padding:"14px 12px"}}>
+          <div style={{fontSize:24,marginBottom:6}}>🤖</div>
+          <div style={{fontWeight:900,color:NAVY,fontSize:14,marginBottom:4}}>CSR AI</div>
+          <span style={{background:"#0055FF",color:WHITE,fontWeight:800,fontSize:9,
+            borderRadius:5,padding:"2px 6px",display:"inline-block",marginBottom:8}}>DIGITAL</span>
+          <div style={{fontSize:12,color:GRAY600,lineHeight:1.5,marginBottom:10}}>
+            {s?"IA que contesta y reserva. Siempre activa, sin personal extra."
+              :"AI that answers and books. Always-on, no extra staff."}
+          </div>
+          <div style={{fontSize:11,color:"#0055FF",fontWeight:700,
+            background:"#EFF6FF",borderRadius:6,padding:"5px 8px",marginBottom:6}}>
+            {s?"Sin costo de personal adicional":"No additional staff cost"}
+          </div>
+          <div style={{fontSize:11,color:GRAY400,lineHeight:1.4}}>
+            📍 {s?"Configuración → Equipos":"Settings → Teams"}
           </div>
         </div>
-        <div style={{fontSize:14,color:GRAY600,lineHeight:1.7,marginBottom:10}}>
-          {s?"Agentes norteamericanos reales que contestan como si fueran parte de tu equipo — usan tu nombre comercial, conocen el lenguaje de home services y reservan directo en tu HCP. Tu cliente nunca sabe que no es tu oficina."
-            :"Real North American agents who answer as an extension of your team — they use your business name, know home service lingo, and book directly into your HCP. Your customer never knows it’s not your office."}
-        </div>
-        <div style={{background:"#F0FDF4",border:"1px solid #6EE7B7",borderRadius:10,padding:"12px 14px",marginBottom:10}}>
-          <div style={{fontSize:12,color:"#047857",fontStyle:"italic",lineHeight:1.7}}>
-            {s?"“Estábamos perdiendo demasiadas llamadas. Con HCP Assist lo resolvimos — saber que puedes ir a hacer tus cosas y que tu negocio sigue funcionando es increíble.”"
-              :"“We were just missing too many calls. With HCP Assist that’s solved — knowing you can go do stuff and have your business still run is honestly such a great experience.”"}
+
+        {/* HCP Assist */}
+        <div style={{background:WHITE,border:"2px solid "+GRAY200,borderRadius:14,padding:"14px 12px"}}>
+          <div style={{fontSize:24,marginBottom:6}}>👥</div>
+          <div style={{fontWeight:900,color:NAVY,fontSize:14,marginBottom:4}}>HCP Assist</div>
+          <span style={{background:"#2E8B57",color:WHITE,fontWeight:800,fontSize:9,
+            borderRadius:5,padding:"2px 6px",display:"inline-block",marginBottom:8}}>
+            {s?"AGENTES REALES":"LIVE AGENTS"}
+          </span>
+          <div style={{fontSize:12,color:GRAY600,lineHeight:1.5,marginBottom:10}}>
+            {s?"Agentes reales que suenan como tu equipo. Reservan directo en tu HCP."
+              :"Real agents who sound like your team. Book directly into your HCP."}
           </div>
-          <div style={{fontSize:11,color:"#065F46",fontWeight:700,marginTop:6}}>
-            — {s?"Operador de home services, cliente de HCP Assist":"Home service operator, HCP Assist customer"}
+          <div style={{fontSize:11,color:"#2E8B57",fontWeight:700,
+            background:"#F0FDF4",borderRadius:6,padding:"5px 8px",marginBottom:6}}>
+            {s?"Tu cliente no sabe que no es tu oficina":"Your customer never knows it's not your office"}
+          </div>
+          <div style={{fontSize:11,color:GRAY400,lineHeight:1.4}}>
+            📍 {s?"Contacta soporte de HCP":"Contact HCP support"}
           </div>
         </div>
-        <div style={{padding:"8px 12px",background:GRAY50,borderRadius:8,fontSize:12,color:NAVY,fontWeight:700,marginBottom:6}}>
-          {s?"Mejor si: quieres que tus clientes sientan que hablan con alguien de tu equipo":"Best if: you want customers to feel like they’re talking to your team"}
-        </div>
-        <div style={{padding:"6px 12px",background:"#EFF6FF",borderRadius:8,fontSize:12,color:"#0055FF",fontWeight:700}}>
-          📍 {s?"Actívalo en: Contacta al soporte de Housecall Pro":"Activate via: Contact Housecall Pro support"}
+
+      </div>
+
+      {/* Both support Good-to-Go */}
+      <div style={{background:"#F0FDF4",border:"1px solid #6EE7B7",borderRadius:10,
+        padding:"10px 14px",marginBottom:12}}>
+        <div style={{fontSize:12,color:"#065F46",fontWeight:700}}>
+          ✓ {s?"Ambos usan Good-to-Go. El cliente queda reservado antes de colgar. Elige el que mejor se adapte a cómo trabajas."
+            :"Both use Good-to-Go. The customer gets booked before they hang up. Pick whichever fits how you work."}
         </div>
       </div>
+
       {/* ROLLOVER PATH */}
       {showsRollover&&(
-        <div style={{marginBottom:14}}>
+        <div style={{marginBottom:12}}>
           <button onClick={()=>setShowRollover(r=>!r)}
             style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",
               background:"#FAFAFA",border:"2px solid "+GRAY200,
-              borderRadius:showRollover?"12px 12px 0 0":"12px",
-              padding:"14px 16px",cursor:"pointer",fontFamily:"inherit"}}>
+              borderRadius:showRollover?"10px 10px 0 0":"10px",
+              padding:"12px 14px",cursor:"pointer",fontFamily:"inherit"}}>
             <div style={{textAlign:"left"}}>
-              <div style={{fontSize:13,fontWeight:800,color:NAVY}}>
-                {s?"🔄 ¿No estás listo para ceder el control de cada llamada?"
+              <div style={{fontSize:12,fontWeight:800,color:NAVY}}>
+                {s?"🔄 ¿No estás listo para ceder cada llamada?"
                   :"🔄 Not ready to hand off every call?"}
               </div>
-              <div style={{fontSize:11,color:GRAY400,marginTop:2}}>
-                {s?"Empieza con desvío de llamadas — tú primero, ellos de respaldo":"Start with rollover — you first, they back you up"}
+              <div style={{fontSize:11,color:GRAY400,marginTop:1}}>
+                {s?"Tú primero — ellos de respaldo":"You first — they back you up"}
               </div>
             </div>
-            <span style={{fontSize:14,color:GRAY400}}>{showRollover?"▲":"▼"}</span>
+            <span style={{fontSize:12,color:GRAY400}}>{showRollover?"▲":"▼"}</span>
           </button>
           {showRollover&&(
-            <div style={{border:"2px solid "+GRAY200,borderTopWidth:0,borderRadius:"0 0 12px 12px",padding:"16px 18px",background:WHITE}}>
-              <div style={{fontSize:14,fontWeight:900,color:NAVY,marginBottom:8}}>
-                {s?"Tú sigues siendo el primero en contestar. Ellos son tu red de seguridad."
-                  :"You stay first in line. They’re your backup."}
+            <div style={{border:"2px solid "+GRAY200,borderTopWidth:0,
+              borderRadius:"0 0 10px 10px",padding:"14px 16px",background:WHITE}}>
+              <div style={{fontSize:13,color:GRAY600,lineHeight:1.7,marginBottom:10}}>
+                {s?"Tu teléfono suena primero. Si no contestas, ellos toman la llamada, reservan al cliente y te mandan un resumen. Tú mantienes el control. No se pierde ninguna llamada."
+                  :"Your phone rings first. If you don't pick up, they catch the call, book the customer, and send you a summary. You stay in control. No call gets dropped."}
               </div>
-              <div style={{fontSize:13,color:GRAY600,lineHeight:1.8,marginBottom:12}}>
-                {s?"Configura CSR AI o HCP Assist como desvío: tu teléfono (o el de tu recepcionista) suena primero. Si no contestas en unos timbrazos, ellos toman la llamada, reservan al cliente y te mandan un resumen. Tú mantienes el control. No se pierde ninguna llamada."
-                  :"Set up CSR AI or HCP Assist as rollover: your phone (or your CSR’s) rings first. If you don’t pick up within a few rings, they catch the call, book the customer, and send you a summary. You stay in control. No call gets dropped."}
-              </div>
-              <div style={{background:"#FFF9EB",border:"1px solid #FCEFC7",borderRadius:10,padding:"12px 14px"}}>
-                <div style={{fontSize:12,color:"#92400E",fontWeight:700,lineHeight:1.7}}>
-                  💡 {s?"Así es como la mayoría empieza — con cobertura nocturna y de fin de semana primero. Una vez que ven que funciona, amplían a tiempo completo."
-                    :"This is how most pros start — after-hours and weekend coverage first. Once they see it work, they expand to full-time."}
-                </div>
+              <div style={{fontSize:11,color:"#92400E",fontWeight:700,
+                background:"#FFF9EB",border:"1px solid #FCEFC7",borderRadius:8,padding:"8px 10px"}}>
+                💡 {s?"Mayoría empieza con after-hours primero. Luego amplían."
+                  :"Most pros start with after-hours first. Then expand."}
               </div>
             </div>
           )}
         </div>
       )}
-      <div style={{background:"#F0FDF4",border:"1px solid #6EE7B7",borderRadius:12,padding:"12px 16px",marginBottom:16}}>
-        <div style={{fontSize:12,color:"#065F46",fontWeight:700,lineHeight:1.6}}>
-          ✓ {s?"Ambos soportan Good-to-Go Scheduling. Ambos reservan al cliente antes de que cuelguen. Elige el que mejor se adapte a cómo trabajas."
-            :"Both support Good-to-Go Scheduling. Both book the customer before they hang up. Pick whichever fits how you work."}
-        </div>
-      </div>
+
       <BottomNav onBack={onBack} onNext={onNext}/>
     </div>
   );
@@ -4211,79 +4198,7 @@ function AssessmentScreen({inputs,setInputs,onBack,onNext,jumpTo,onJumpConsumed}
           </div>
         </Card>
 
-        {/* ── HOW A SOLUTION FIXES THIS — shown when there are missed calls ── */}
-        {mc>0&&(
-          <div style={{background:NAVY,borderRadius:16,padding:"18px 20px",marginBottom:4}}>
-            <div style={{fontSize:11,fontWeight:700,color:YELLOW,textTransform:"uppercase",
-              letterSpacing:"1.5px",marginBottom:12}}>
-              {s?"CÓMO SE SOLUCIONA ESTO":"HOW THIS GETS FIXED"}
-            </div>
 
-            {hasSolution?(
-              // They already have CSR AI or HCP Assist — tell them what it does for them
-              <div>
-                <div style={{fontSize:13,fontWeight:700,color:WHITE,lineHeight:1.7,marginBottom:12}}>
-                  {answerSolution==="csr_ai"
-                    ?(s?"CSR AI contesta cada llamada automáticamente, las 24 horas, los 7 días de la semana. Estas 3 llamadas perdidas por semana habrían sido contestadas y agendadas antes de que el cliente colgara.":"CSR AI answers every call automatically, 24 hours a day, 7 days a week. These 3 missed calls per week would have been answered and booked before the caller hung up.")
-                    :(s?"HCP Assist pone a agentes reales disponibles las 24 horas. Estas 3 llamadas perdidas por semana habrían sido contestadas por una persona real y agendadas directamente en tu calendario.":"HCP Assist puts real agents on call 24 hours a day. These 3 missed calls per week would have been answered by a real person and booked directly into your calendar.")}
-                </div>
-                <div style={{background:"rgba(16,185,129,0.12)",border:"1px solid rgba(16,185,129,0.3)",
-                  borderRadius:10,padding:"10px 14px",fontSize:13,color:"rgba(255,255,255,0.85)",
-                  fontWeight:600,lineHeight:1.6}}>
-                  ✅ {s
-                    ?`Con Good-to-Go Scheduling activado, recuperas potencialmente $${weeklyLostRevenue.toLocaleString()} por semana — $${annualLostRevenue.toLocaleString()} al año.`
-                    :`With Good-to-Go Scheduling active, you potentially recover $${weeklyLostRevenue.toLocaleString()} per week — $${annualLostRevenue.toLocaleString()} per year.`}
-                </div>
-              </div>
-            ):(
-              // No solution yet — show what each option would do for THEIR specific numbers
-              <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                {[
-                  {
-                    name:"CSR AI",
-                    tag:s?"ASISTENTE DIGITAL":"DIGITAL ASSISTANT",
-                    tagColor:"#0055FF",
-                    desc:s
-                      ?`Contesta automáticamente las ${mc} llamadas perdidas por semana, las 24 horas. Antes de que el cliente cuelgue, ya está agendado en tu calendario.`
-                      :`Automatically answers all ${mc} missed calls per week, around the clock. Before the caller hangs up, they are booked in your calendar.`,
-                    impact:s
-                      ?`Potencialmente recupera $${weeklyLostRevenue.toLocaleString()} por semana`
-                      :`Potentially recovers $${weeklyLostRevenue.toLocaleString()} per week`,
-                  },
-                  {
-                    name:"HCP Assist",
-                    tag:s?"AGENTES REALES":"LIVE AGENTS",
-                    tagColor:"#2E8B57",
-                    desc:s
-                      ?`Agentes reales contestan las ${mc} llamadas perdidas por semana, las 24 horas. Cada llamada queda agendada directamente en tu calendario de HCP.`
-                      :`Real agents answer all ${mc} missed calls per week, around the clock. Every call gets booked directly into your HCP calendar.`,
-                    impact:s
-                      ?`Potencialmente recupera $${weeklyLostRevenue.toLocaleString()} por semana`
-                      :`Potentially recovers $${weeklyLostRevenue.toLocaleString()} per week`,
-                  },
-                ].map((opt,i)=>(
-                  <div key={i} style={{background:"rgba(255,255,255,0.07)",
-                    borderRadius:12,padding:"14px 16px"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                      <span style={{fontWeight:900,color:WHITE,fontSize:14}}>{opt.name}</span>
-                      <span style={{background:opt.tagColor,color:WHITE,fontWeight:800,
-                        fontSize:10,borderRadius:6,padding:"2px 8px"}}>{opt.tag}</span>
-                    </div>
-                    <div style={{fontSize:13,color:"rgba(255,255,255,0.75)",
-                      lineHeight:1.65,marginBottom:8}}>{opt.desc}</div>
-                    <div style={{fontSize:12,fontWeight:800,color:YELLOW}}>
-                      💰 {opt.impact}
-                    </div>
-                  </div>
-                ))}
-                <div style={{fontSize:11,color:"rgba(255,255,255,0.4)",
-                  textAlign:"center",fontWeight:600,paddingTop:4}}>
-                  {s?"Ambas opciones se integran directamente con tu calendario de Housecall Pro.":"Both options book directly into your Housecall Pro calendar."}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         <BottomNav onBack={()=>setStep(handling==="service"&&(answerSolution==="csr_ai"||answerSolution==="hcp_assist")?"call_config":"call_handling_detail")} onNext={()=>goNext("estimates")}/>
       </div>
