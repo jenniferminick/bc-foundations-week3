@@ -59,7 +59,7 @@ const W3_PHASES=new Set([
   "t3_intro",
   "t3_customers_intro","t3_customers_plug","t3_customers_script",
   "t3_estimates_intro","t3_estimates_fix","t3_estimates_script",
-  "t3_calls_intro","t3_calls_fix","t3_calls_script",
+  "t3_calls_intro","t3_calls_pain","t3_calls_gap","t3_calls_fix","t3_calls_script",
   "t3_goal_complete",
   // Top Funnel — 4 buckets
   "top_intro",
@@ -99,10 +99,10 @@ const NAV=[
    subEs:{"t3_estimates_fix":"⚙️ Mejora tu Sistema","t3_estimates_script":"⚡ Solución Rápida"},
   },
   {id:"calls", emoji:"📞", label:"Missed Calls", labelEs:"Llamadas Perdidas",
-   phases:["t3_calls_intro","t3_calls_fix","t3_calls_script"],
-   subPhases:["t3_calls_fix","t3_calls_script"],
-   sub:{"t3_calls_fix":"⚙️ Upgrade Your System","t3_calls_script":"⚡ Quick Fix"},
-   subEs:{"t3_calls_fix":"⚙️ Mejora tu Sistema","t3_calls_script":"⚡ Solución Rápida"},
+   phases:["t3_calls_intro","t3_calls_pain","t3_calls_gap","t3_calls_fix","t3_calls_script"],
+   subPhases:["t3_calls_pain","t3_calls_gap","t3_calls_fix","t3_calls_script"],
+   sub:{"t3_calls_pain":"💸 The Cost","t3_calls_gap":"🔍 The Gap","t3_calls_fix":"⚙️ The Fix","t3_calls_script":"⚡ Quick Fix"},
+   subEs:{"t3_calls_pain":"💸 El Costo","t3_calls_gap":"🔍 La Brecha","t3_calls_fix":"⚙️ La Solución","t3_calls_script":"⚡ Solución Rápida"},
   },
   {id:"amplify", emoji:"🚀", label:"Amplify", labelEs:"Amplificar",
    phases:["top_intro","top_calls_intro","top_calls_fix","top_calls_script","top_email_intro","top_email_fix","top_email_script","top_chat_intro","top_chat_fix","top_chat_script","top_social_intro","top_social_fix","top_social_script","mid_intro","mid_fresh_intro","mid_fresh_fix","mid_fresh_script","mid_stale_intro","mid_stale_fix","mid_stale_script","mid_closed_intro","mid_closed_fix","mid_closed_script","bottom_intro","bottom_customers_intro","bottom_customers_fix","bottom_customers_script","bottom_referrals_intro","bottom_referrals_fix","bottom_referrals_script"],
@@ -912,19 +912,18 @@ function T3Intro({onNext,onBack}){
   const s=useSp();
   return (
     <div>
-      {/* Overview banner — no "Top 3" label since nav already communicates structure */}
       <div style={{background:"linear-gradient(135deg,#1a3a6b,#0A2443)",border:"2px solid "+YELLOW,borderRadius:20,padding:"28px 28px",marginBottom:24,position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",top:-20,right:-20,fontSize:120,opacity:0.04,pointerEvents:"none"}}>💧</div>
         <h1 style={{color:YELLOW,fontSize:22,fontWeight:900,margin:"0 0 12px",lineHeight:1.3}}>
-          {s?"Tres estrategias. Una tiene que funcionar. Empieza aquí.":"Three strategies. One needs to work. Start here."}
+          {s?"Estos trabajos ya eran tuyos. Así es como los recuperas.":"These jobs were already yours. Here's how to get them back."}
         </h1>
         <p style={{color:"rgba(255,255,255,0.85)",fontSize:14,lineHeight:1.8,margin:"0 0 16px"}}>
-          {s?"Estas 3 estrategias atacan las fugas más grandes — los clientes que casi fueron tuyos. No tienes que ganar las 3. Solo necesitas que una cierre.":"These 3 strategies target the biggest leaks — leads that almost became customers. You don't need all 3 to work. You just need one to close."}
+          {s?"El dinero no desapareció. Solo está esperando un seguimiento. Estas 3 estrategias van tras los ingresos que casi fueron tuyos — los clientes que casi dijeron que sí.":"The money isn't gone. It's just waiting on a follow-up. These 3 strategies go after revenue that almost happened — people who were this close to saying yes."}
         </p>
         <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
           {[
-            {label:s?"Tapa la fuga":"Plug the leak",desc:s?"Arregla el sistema para que nunca más pierdas este tipo de lead.":"Fix the system so you never lose this lead type again."},
-            {label:s?"Recupera el agua":"Recover the spill",desc:s?"Llama/envía ahora a los que ya perdiste. El tiempo importa.":"Contact the ones you already lost. Time matters here."},
+            {label:s?"Para la sangría":"Stop the bleeding",desc:s?"Arregla el sistema para que deje de pasar.":"Fix the system so it stops happening."},
+            {label:s?"Recupera lo que ya salió":"Recover what's already out there",desc:s?"Ve por los que ya perdiste. El tiempo importa.":"Go get the ones you already lost. Time matters."},
           ].map((item,i)=>(
             <div key={i} style={{flex:1,minWidth:160,background:"rgba(255,183,6,0.1)",border:"1px solid rgba(255,183,6,0.25)",borderRadius:10,padding:"10px 14px"}}>
               <div style={{color:YELLOW,fontWeight:900,fontSize:12,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>{item.label}</div>
@@ -934,22 +933,21 @@ function T3Intro({onNext,onBack}){
         </div>
       </div>
 
-      {/* The 3 plays overview */}
       <div style={{fontWeight:800,color:NAVY,fontSize:13,marginBottom:12,textTransform:"uppercase",letterSpacing:"0.05em"}}>
         {s?"Tus 3 objetivos esta semana":"Your 3 targets this week"}
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:20}}>
         {[
           {emoji:"👥",rank:"#1",title:s?"LTV del Cliente":"Customer LTV",
-           why:s?"Tus prospectos más cálidos. Cero costo. Ya confían en ti.":"Your warmest leads. Zero cost. They already trust you.",
+           why:s?"Clientes pasados que ya confían en ti. Un mensaje puede traerlos de vuelta esta semana.":"Past customers who already like you. One message can bring them back this week.",
            risk:s?"Riesgo: los pierdes ante un competidor para siempre.":"Risk: they drift to a competitor permanently.",
            color:"#FEF9EC",border:YELLOW},
-          {emoji:"📋",rank:"#2",title:s?"Estimados Abiertos":"Fresh Estimates (0-30d)",
-           why:s?"Los más calientes. Mayor tasa de cierre. Ya en HCP.":"Hottest leads. Highest close rate. Already in HCP.",
-           risk:s?"Riesgo: el tiempo mata los tratos. Cada día importa.":"Risk: time kills deals. Every day without follow-up costs you.",
+          {emoji:"📋",rank:"#2",title:s?"Estimados Abiertos":"Open Estimates",
+           why:s?"Personas que pidieron un precio y guardaron silencio. La mayoría aún no ha contratado a nadie.":"People who asked for a price and went quiet. Most of them haven't hired anyone yet.",
+           risk:s?"Riesgo: el tiempo mata los tratos. Cada día sin seguimiento te cuesta.":"Risk: time kills deals. Every day without follow-up costs you.",
            color:"#EFF6FF",border:"#93C5FD"},
-          {emoji:"📞",rank:"#3",title:s?"Llamadas Perdidas":"Missed Calls & Voicemail",
-           why:s?"Compradores pre-calificados que te eligieron ya.":"Pre-qualified buyers who already chose you.",
+          {emoji:"📞",rank:"#3",title:s?"Llamadas Perdidas":"Missed Calls",
+           why:s?"Personas que llamaron listas para reservar. Contratarán a quien les llame primero.":"People who called you ready to book. They'll hire whoever calls back first.",
            risk:s?"Riesgo: 78% van con quien llama primero.":"Risk: 78% go with whoever calls back first.",
            color:"#F0FDF4",border:"#86EFAC"},
         ].map((play,i)=>(
@@ -1181,53 +1179,55 @@ function T3CustomersLearn({onNext,onBack}){
     {id:"steps",emoji:"📋",label:s?"Guía Paso a Paso":"Step-by-Step Walkthrough",sub:s?"Sigue las instrucciones para configurar HCP Campaigns.":"Follow the instructions to set up HCP Campaigns."},
   ];
 
-  const STEPS_EN=[
-    {n:1,title:"Open HCP Campaigns",desc:"In Housecall Pro, go to Marketing → Campaigns. Click New Campaign."},
-    {n:2,title:"Choose your audience",desc:"Select Past Customers. Filter to customers from the last 12 months if you want a warm list."},
-    {n:3,title:"Choose SMS or Email",desc:"Pick your channel. SMS gets higher open rates. Email is better for a longer message with a booking link."},
-    {n:4,title:"Paste your script",desc:"Use the script from the next page. Keep it short and personal — no sales pitch, just a friendly check-in."},
-    {n:5,title:"Schedule and send",desc:"Schedule for Tuesday–Thursday, 9am–11am local time. Those windows get the highest response rates."},
-  ];
-  const STEPS_ES=[
-    {n:1,title:"Abre HCP Campaigns",desc:"En Housecall Pro, ve a Marketing → Campaigns. Haz clic en Nueva Campaña."},
-    {n:2,title:"Elige tu audiencia",desc:"Selecciona Clientes Pasados. Filtra a clientes de los últimos 12 meses para una lista más cálida."},
-    {n:3,title:"Elige SMS o Email",desc:"Selecciona tu canal. SMS tiene tasas de apertura más altas. Email es mejor para un mensaje más largo con enlace de reserva."},
-    {n:4,title:"Pega tu guión",desc:"Usa el guión de la página siguiente. Mantenlo corto y personal, sin discurso de ventas, solo un saludo amistoso."},
-    {n:5,title:"Programa y envía",desc:"Programa para martes–jueves, 9am–11am hora local. Esas ventanas obtienen las tasas de respuesta más altas."},
-  ];
-  const STEPS=s?STEPS_ES:STEPS_EN;
-
   return (
     <div>
-      <SectionHeader emoji="📚" title={s?"¿Cómo quieres configurar esto?":"How do you want to set this up?"} subtitle={s?"Esto implica algunos clics en HCP Campaigns. Elige cómo quieres aprenderlo.":"This involves a few clicks in HCP Campaigns. Pick how you want to learn it."}/>
+      <SectionHeader emoji="📚"
+        title={s?"¿Cómo quieres configurar esto?":"How do you want to set this up?"}
+        subtitle={s?"Esto implica algunos clics en HCP Campaigns. Elige cómo quieres aprenderlo.":"This involves a few clicks in HCP Campaigns. Pick how you want to learn it."}/>
 
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:20}}>
         {options.map(opt=>(
           <div key={opt.id} onClick={()=>setPicked(opt.id)}
-            style={{background:picked===opt.id?NAVY:WHITE,border:"3px solid "+(picked===opt.id?YELLOW:GRAY200),borderRadius:16,padding:"18px 16px",cursor:"pointer",transition:"all 0.15s",display:"flex",flexDirection:"column",gap:8,position:"relative"}}>
+            style={{background:picked===opt.id?NAVY:WHITE,
+              border:"3px solid "+(picked===opt.id?YELLOW:GRAY200),
+              borderRadius:16,padding:"18px 16px",cursor:"pointer",
+              transition:"all 0.15s",display:"flex",flexDirection:"column",
+              gap:8,position:"relative"}}>
             {opt.recommended&&(
-              <div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:YELLOW,borderRadius:99,padding:"3px 12px",whiteSpace:"nowrap"}}>
-                <span style={{color:NAVY,fontWeight:900,fontSize:11}}>⭐ {s?"Recomendado":"Recommended"}</span>
+              <div style={{position:"absolute",top:-12,left:"50%",
+                transform:"translateX(-50%)",background:YELLOW,
+                borderRadius:99,padding:"3px 12px",whiteSpace:"nowrap"}}>
+                <span style={{color:NAVY,fontWeight:900,fontSize:11}}>
+                  ⭐ {s?"Recomendado":"Recommended"}
+                </span>
               </div>
             )}
             <div style={{fontSize:28,marginTop:opt.recommended?8:0}}>{opt.emoji}</div>
-            <div style={{fontWeight:900,color:picked===opt.id?YELLOW:NAVY,fontSize:14,lineHeight:1.3}}>{opt.label}</div>
-            <div style={{fontSize:12,color:picked===opt.id?"rgba(255,255,255,0.7)":GRAY600,lineHeight:1.6}}>{opt.sub}</div>
+            <div style={{fontWeight:900,color:picked===opt.id?YELLOW:NAVY,
+              fontSize:14,lineHeight:1.3}}>{opt.label}</div>
+            <div style={{fontSize:12,color:picked===opt.id?"rgba(255,255,255,0.7)":GRAY600,
+              lineHeight:1.6}}>{opt.sub}</div>
             {picked===opt.id&&(
               <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4}}>
-                <div style={{width:18,height:18,borderRadius:"50%",background:YELLOW,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={NAVY} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <div style={{width:18,height:18,borderRadius:"50%",background:YELLOW,
+                  display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={NAVY}
+                    strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
                 </div>
-                <span style={{color:YELLOW,fontWeight:800,fontSize:12}}>{s?"Seleccionado":"Selected"}</span>
+                <span style={{color:YELLOW,fontWeight:800,fontSize:12}}>
+                  {s?"Seleccionado":"Selected"}
+                </span>
               </div>
             )}
           </div>
         ))}
       </div>
 
-
-
-      <BottomNav onBack={onBack} onNext={onNext}/>
+      <BottomNav onBack={onBack}
+        onNext={()=>onNext(picked)}
+        nextDisabled={!picked}/>
     </div>
   );
 }
@@ -1620,9 +1620,14 @@ function T3CustomersScript({inputs,setFlag,onNext,onBack}){
       onNext={(picked)=>{
         if(picked==="video") setStep("video");
         else if(picked==="steps") setStep("steps");
-        else setStep(isEmail?"q_biz":"ready");
+        else setStep(isEmail?"q_biz":"ready"); // null (skip) or anything else → straight to scripts
       }}
     />;
+  }
+
+  // SMS path to "ready": auto-generate if arriving without scripts
+  if(step==="ready"&&!isEmail&&!scripts&&!loading&&!error){
+    generate();
   }
 
   if(step==="video"){
@@ -2435,278 +2440,527 @@ function T3CallsIntro({onNext,onBack}){
   );
 }
 
-// T3 Calls — Page 2: Fix the Leak (24/7 coverage picker)
+// ── T3 Calls — Step 1: The Pain ─────────────────────────────────────────────
+// One job: make the cost feel real and personal. Get the first "yes."
+function T3CallsPain({inputs,onNext,onBack}){
+  const s=useSp();
+  const mc=inputs.mc||3;
+  const tc=inputs.tc||10;
+  const avgJobSize=inputs.avgJobSize||500;
+  const closeRate=inputs.closeRate||30;
+  const trade=inputs.trade||"home services";
+  const weeklyLost=Math.round(mc*avgJobSize*(closeRate/100));
+  const annualLost=weeklyLost*52;
+  const missRate=tc>0?Math.round((mc/tc)*100):0;
+  const [confirmed,setConfirmed]=useState({weekly:false,annual:false,window:false});
+  const allConfirmed=confirmed.weekly&&confirmed.annual&&confirmed.window;
+  const toggle=(k)=>setConfirmed(p=>({...p,[k]:!p[k]}));
+  return (
+    <div>
+      <SectionHeader emoji="📞" title={s?"Llamadas Perdidas — El Costo Real":"Missed Calls — The Real Cost"}/>
+      <div style={{background:NAVY,borderRadius:20,padding:"32px 24px",marginBottom:16,textAlign:"center"}}>
+        <div style={{fontSize:13,fontWeight:700,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"1.5px",marginBottom:8}}>
+          {s?"Estás perdiendo cada semana":"You're losing every week"}
+        </div>
+        <div style={{fontSize:64,fontWeight:900,color:RED,lineHeight:1,marginBottom:4}}>
+          ${weeklyLost.toLocaleString()}
+        </div>
+        <div style={{fontSize:16,color:"rgba(255,255,255,0.6)",marginBottom:20}}>
+          {s?`de ${mc} llamadas que no se contestaron`:`from ${mc} calls that went unanswered`}
+        </div>
+        <button onClick={()=>toggle("weekly")} style={{
+          width:"100%",background:confirmed.weekly?"rgba(16,185,129,0.2)":"rgba(255,255,255,0.07)",
+          border:"1px solid "+(confirmed.weekly?"rgba(16,185,129,0.5)":"rgba(255,255,255,0.12)"),
+          borderRadius:10,padding:"10px 14px",marginBottom:14,cursor:"pointer",
+          fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <span style={{fontSize:13,color:confirmed.weekly?"#6EE7B7":WHITE,fontWeight:700}}>
+            {s?`Sí, pierdo ~$${weeklyLost.toLocaleString()} por semana`:`Yeah, I’m losing ~$${weeklyLost.toLocaleString()} a week`}
+          </span>
+          <span style={{fontSize:16}}>{confirmed.weekly?"✅":"○"}</span>
+        </button>
+        <div style={{background:"rgba(239,68,68,0.15)",border:"1px solid rgba(239,68,68,0.3)",borderRadius:14,padding:"16px 20px",marginBottom:14}}>
+          <div style={{fontSize:12,color:"#FCA5A5",fontWeight:700,textTransform:"uppercase",letterSpacing:"1px",marginBottom:6}}>
+            {s?"Proyectado este año":"Projected this year"}
+          </div>
+          <div style={{fontSize:36,fontWeight:900,color:WHITE,lineHeight:1}}>${annualLost.toLocaleString()}</div>
+          <div style={{fontSize:12,color:"rgba(255,255,255,0.5)",marginTop:4}}>{s?"si no cambia nada":"if nothing changes"}</div>
+        </div>
+        <button onClick={()=>toggle("annual")} style={{
+          width:"100%",background:confirmed.annual?"rgba(16,185,129,0.2)":"rgba(255,255,255,0.07)",
+          border:"1px solid "+(confirmed.annual?"rgba(16,185,129,0.5)":"rgba(255,255,255,0.12)"),
+          borderRadius:10,padding:"10px 14px",marginBottom:14,cursor:"pointer",
+          fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <span style={{fontSize:13,color:confirmed.annual?"#6EE7B7":WHITE,fontWeight:700}}>
+            {s?`Eso son $${annualLost.toLocaleString()} al año que se van`:`That’s $${annualLost.toLocaleString()}/year walking out the door`}
+          </span>
+          <span style={{fontSize:16}}>{confirmed.annual?"✅":"○"}</span>
+        </button>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          {[
+            {val:mc+" "+(mc===1?(s?"llamada":"call"):(s?"llamadas":"calls")),label:s?"perdidas/semana":"missed/week"},
+            {val:missRate+"%",label:s?"tasa de pérdida":"miss rate"},
+          ].map((item,i)=>(
+            <div key={i} style={{background:"rgba(255,255,255,0.06)",borderRadius:12,padding:"12px 8px"}}>
+              <div style={{fontSize:22,fontWeight:900,color:YELLOW,lineHeight:1}}>{item.val}</div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.5px",marginTop:4}}>{item.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{background:"#FFF5F5",border:"1px solid #FECACA",borderRadius:14,padding:"16px 18px",marginBottom:10}}>
+        <div style={{fontSize:14,color:"#991B1B",fontWeight:700,lineHeight:1.6}}>
+          {s
+            ?`El 78% de los dueños de casas contratan al primero que contesta. En ${trade}, esa ventana es de menos de 4 minutos.`
+            :`78% of homeowners hire whoever answers first. In ${trade}, that window is under 4 minutes.`}
+        </div>
+      </div>
+      <button onClick={()=>toggle("window")} style={{
+        width:"100%",background:confirmed.window?"#F0FDF4":"#FAFAFA",
+        border:"2px solid "+(confirmed.window?"#6EE7B7":GRAY200),
+        borderRadius:10,padding:"10px 14px",marginBottom:16,cursor:"pointer",
+        fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <span style={{fontSize:13,color:confirmed.window?"#065F46":NAVY,fontWeight:700}}>
+          {s?"Sí, mis competidores probablemente contestan esas llamadas":"Yeah, my competitors are probably getting those calls"}
+        </span>
+        <span style={{fontSize:16}}>{confirmed.window?"✅":"○"}</span>
+      </button>
+      <button onClick={onNext} style={{
+        width:"100%",background:NAVY,
+        border:allConfirmed?"2px solid "+YELLOW:"2px solid transparent",
+        borderRadius:16,padding:"20px 24px",cursor:"pointer",fontFamily:"inherit",
+        display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8,
+        boxShadow:allConfirmed?"0 0 0 3px rgba(255,183,6,0.2)":"none",
+        transition:"border 0.2s, box-shadow 0.2s",
+      }}>
+        <div style={{textAlign:"left"}}>
+          <div style={{fontSize:15,fontWeight:900,color:WHITE,lineHeight:1.3}}>{s?"Sí, eso es dinero real →":"Yeah, that’s real money →"}</div>
+          <div style={{fontSize:12,color:"rgba(255,255,255,0.5)",marginTop:3}}>{s?"Ver por qué está pasando":"See why this is happening"}</div>
+        </div>
+        <div style={{fontSize:28}}>💸</div>
+      </button>
+      <button onClick={onBack} style={{width:"100%",background:"none",border:"none",padding:"10px",fontSize:13,color:GRAY400,cursor:"pointer",fontFamily:"inherit"}}>
+        {s?"← Atrás":"← Back"}
+      </button>
+    </div>
+  );
+}
+function T3CallsGap({inputs,onNext,onBack}){
+  const s=useSp();
+  const handling=inputs.handling||null;
+  const selfBehavior=inputs.selfBehavior||null;
+  const answerSolution=inputs.answerSolution||null;
+  const activeConfig=inputs.answerSolution==="csr_ai"?inputs.csrAiConfig:
+                     inputs.answerSolution==="hcp_assist"?inputs.hcpAssistConfig:null;
+  const mc=inputs.mc||3;
+  const trade=inputs.trade||"home services";
+  const csrCost=inputs.csrCost||3500;
+
+  // Build the situation-specific "gap" explanation
+  const getGap=()=>{
+    // Has product, wrong config — gap is a setting, not a product
+    const alreadyHas=answerSolution==="csr_ai"||answerSolution==="hcp_assist";
+    if(alreadyHas&&activeConfig&&activeConfig!=="good2go"){
+      const prod=answerSolution==="csr_ai"?"CSR AI":"HCP Assist";
+      const configLabel=activeConfig==="take_message"?"Take a Message":
+                        activeConfig==="notes_only"?"Notes Only":
+                        activeConfig==="olb_link"?"Send OLB Link":"Optional Follow-Up";
+      return {
+        icon:"⚙️",
+        situation:s?`Tienes ${prod} pero estás en "${configLabel}"`:`You have ${prod} but you're on "${configLabel}"`,
+        gap:s?`Cuando termina una llamada en "${configLabel}", el cliente cuelga sin estar reservado. Entonces sigue buscando. Para cuando alguien le da seguimiento, ya contrató a alguien más.`
+           :`When a call ends on "${configLabel}", the customer hangs up without being booked. So they keep shopping. By the time someone follows up, they've already hired someone else.`,
+        insight:s?`La llamada llega a tu sistema — pero no llega a tu calendario. Esa brecha entre "recibido" y "reservado" es donde se pierden los trabajos.`
+               :`The call reaches your system — but it doesn't reach your calendar. That gap between "received" and "booked" is where jobs are lost.`,
+        ctaText:s?"Sí, veo la brecha →":"Yeah, I see the gap →",
+        ctaSub:s?"Ver cómo cerrarla":"See how to close it",
+      };
+    }
+
+    // Self + voicemail
+    if(handling==="self"&&selfBehavior==="voicemail"){
+      return {
+        icon:"📱",
+        situation:s?"Las llamadas van al buzón cuando estás en un trabajo":"Calls go to voicemail when you're on a job",
+        gap:s?`El cliente llama, llega al buzón, espera entre 3 y 7 minutos. Luego llama al siguiente en la lista. En ${trade}, el primero en contestar suele ser quien se lleva el trabajo.`
+           :`The customer calls, hits voicemail, waits 3–7 minutes. Then calls the next person on the list. In ${trade}, whoever answers first usually gets the job.`,
+        insight:s?`No es que no quieras contestar — es que no puedes estar en dos lugares a la vez. No hay forma de estar en un trabajo Y contestar nuevas llamadas al mismo tiempo.`
+               :`It's not that you don't want to answer — you can't be in two places at once. There's no way to be on a job AND answering new calls at the same time.`,
+        ctaText:s?"Sí, ese soy yo →":"Yep, that's me →",
+        ctaSub:s?"Ver cómo solucionarlo":"See how to fix it",
+      };
+    }
+
+    // Self + stepaway
+    if(handling==="self"&&selfBehavior==="stepaway"){
+      return {
+        icon:"🏃",
+        situation:s?"Interrumpes el trabajo para contestar llamadas":"You stop mid-job to take calls",
+        gap:s?`Cuando interrumpes el trabajo para contestar, el cliente ve a alguien que está ocupado. El trabajo actual sufre. Y las llamadas que pierdes cuando no puedes detenerte van directo a la competencia.`
+           :`When you stop a job to answer, the customer sees someone who's busy. The current job suffers. And the calls you miss when you can't stop go straight to a competitor.`,
+        insight:s?`Estás perdiendo en ambos lados — calidad del trabajo actual Y trabajos nuevos que no llegan a contestarse. No es un problema de esfuerzo. Es un problema de cobertura.`
+               :`You're losing on both ends — current job quality AND new jobs that don't get answered. This isn't an effort problem. It's a coverage problem.`,
+        ctaText:s?"Sí, eso es exactamente lo que pasa →":"Yeah, that's exactly what happens →",
+        ctaSub:s?"Ver la solución":"See the solution",
+      };
+    }
+
+    // Self + callback
+    if(handling==="self"&&selfBehavior==="callback"){
+      return {
+        icon:"📲",
+        situation:s?"Terminas el trabajo y luego los llamas":"You finish the job then call them back",
+        gap:s?`El problema es la ventana. El cliente llama, espera, se enfría y llama a un competidor — todo antes de que puedas devolver la llamada. Para cuando los llamas, el trabajo ya no está disponible. Sucede ${mc} veces por semana.`
+           :`The problem is the window. The customer calls, waits, cools off, and calls a competitor — all before you can call back. By the time you reach them, the job is gone. That plays out ${mc} times a week.`,
+        insight:s?`El seguimiento no funciona en home services. El cliente quiere una respuesta ahora, no cuando puedas. No es que seas demasiado lento — es que el mercado se mueve más rápido que el seguimiento.`
+               :`Follow-up doesn't work in home services. The customer wants an answer now, not when you can get to it. It's not that you're too slow — it's that the market moves faster than follow-up.`,
+        ctaText:s?"Sí, reconozco eso →":"Yeah, I recognize that →",
+        ctaSub:s?"Ver cómo captarlos en tiempo real":"See how to catch them in real time",
+      };
+    }
+
+    // CSR
+    if(handling==="csr"){
+      const csrMonthly=Math.round(csrCost*1.3);
+      return {
+        icon:"👤",
+        situation:s?`Tu recepcionista ($${csrMonthly.toLocaleString()}/mes) no puede estar en todas partes a la vez`:`Your CSR ($${csrMonthly.toLocaleString()}/mo) can't be everywhere at once`,
+        gap:s?`Hay cinco ventanas donde las llamadas se acumulan: mañana temprano, hora del almuerzo, fin del día, después del horario y fines de semana. Cuando llaman dos a la vez y tu recepcionista ya está con alguien, la siguiente llama va al buzón. En ${trade}, el primero en contestar suele ganar el trabajo.`
+           :`There are five windows where calls stack: early morning, lunch, end of day, after hours, and weekends. When two calls come in and your CSR is already on one, the next caller hits voicemail. In ${trade}, whoever answers first usually gets the job.`,
+        insight:s?`No es que tu recepcionista no sea bueno — un solo punto de cobertura crea puntos ciegos. Esas cinco ventanas de acumulación son donde la competencia se lleva tus trabajos más urgentes y rentables.`
+               :`It's not that your CSR isn't good — one coverage point creates blind spots. Those five stacking windows are where competitors pick up your most urgent and profitable jobs.`,
+        ctaText:s?"Sí, ahí está la brecha →":"Yeah, that's the gap →",
+        ctaSub:s?"Ver cómo cubrirla":"See how to cover it",
+      };
+    }
+
+    // Answering service / other
+    return {
+      icon:"🏢",
+      situation:s?"Tu servicio de respuesta toma mensajes pero no reserva":"Your answering service takes messages but doesn't book",
+      gap:s?`Un mensaje tomado no es un trabajo ganado. El cliente cuelga sin estar reservado, sigue buscando, y el primero que los reserve en un calendario se lleva el trabajo. "Les haremos saber" no compite con "¿a qué hora les queda bien?"`
+         :`A message taken isn't a job won. The customer hangs up without being booked, keeps shopping, and whoever books them into a calendar first gets the job. "We'll have them call you back" can't compete with "What time works for you?"`,
+      insight:s?`La diferencia entre un servicio de respuesta y una solución de reservas no es tecnología — es que el cliente queda reservado antes de colgar.`
+             :`The difference between an answering service and a booking solution isn't technology — it's whether the customer is booked before they hang up.`,
+      ctaText:s?"Sí, eso tiene sentido →":"Yeah, that makes sense →",
+      ctaSub:s?"Ver la diferencia":"See the difference",
+    };
+  };
+
+  const gap=getGap();
+
+  return (
+    <div>
+      <SectionHeader emoji="🔍"
+        title={s?"Llamadas Perdidas — Por Qué Pasa":"Missed Calls — Why It Happens"}/>
+
+      {/* SITUATION CARD — mirror back their specific reality */}
+      <div style={{background:NAVY,borderRadius:16,padding:"20px 20px",marginBottom:12}}>
+        <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.4)",
+          textTransform:"uppercase",letterSpacing:"1.5px",marginBottom:8}}>
+          {s?"Tu situación":"Your situation"}
+        </div>
+        <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
+          <div style={{fontSize:32,flexShrink:0,lineHeight:1}}>{gap.icon}</div>
+          <div style={{fontSize:15,fontWeight:800,color:WHITE,lineHeight:1.4}}>
+            {gap.situation}
+          </div>
+        </div>
+      </div>
+
+      {/* THE GAP — plain language, no jargon */}
+      <div style={{borderRadius:16,border:"2px solid "+GRAY200,background:WHITE,
+        padding:"18px 20px",marginBottom:12}}>
+        <div style={{fontSize:11,fontWeight:700,color:GRAY400,
+          textTransform:"uppercase",letterSpacing:"1.5px",marginBottom:10}}>
+          {s?"Qué pasa con esas llamadas":"What happens to those calls"}
+        </div>
+        <div style={{fontSize:14,color:GRAY600,lineHeight:1.8}}>
+          {gap.gap}
+        </div>
+      </div>
+
+      {/* THE INSIGHT — reframe, not blame */}
+      <div style={{background:"#FFF9EB",border:"2px solid #FCEFC7",
+        borderRadius:16,padding:"16px 18px",marginBottom:20}}>
+        <div style={{fontSize:11,fontWeight:700,color:"#92400E",
+          textTransform:"uppercase",letterSpacing:"1.5px",marginBottom:8}}>
+          💡 {s?"La verdad":"The truth"}
+        </div>
+        <div style={{fontSize:14,color:"#78350F",fontWeight:600,lineHeight:1.7}}>
+          {gap.insight}
+        </div>
+      </div>
+
+      {/* THE SECOND EASY YES */}
+      <button onClick={onNext} style={{
+        width:"100%",background:NAVY,border:"none",borderRadius:16,
+        padding:"20px 24px",cursor:"pointer",fontFamily:"inherit",
+        display:"flex",alignItems:"center",justifyContent:"space-between",
+        marginBottom:8,
+      }}>
+        <div style={{textAlign:"left"}}>
+          <div style={{fontSize:15,fontWeight:900,color:WHITE,lineHeight:1.3}}>
+            {gap.ctaText}
+          </div>
+          <div style={{fontSize:12,color:"rgba(255,255,255,0.5)",marginTop:3}}>
+            {gap.ctaSub}
+          </div>
+        </div>
+        <div style={{fontSize:24}}>→</div>
+      </button>
+
+      <button onClick={onBack} style={{
+        width:"100%",background:"none",border:"none",padding:"10px",
+        fontSize:13,color:GRAY400,cursor:"pointer",fontFamily:"inherit",
+      }}>
+        {s?"← Atrás":"← Back"}
+      </button>
+    </div>
+  );
+}
+
+// T3 Calls — Step 3: The Fix (product-only, no re-selling the problem)
+// By this point they've agreed the problem is real AND their approach has a gap.
+// One job: present the solution clearly and let them step into it.
 function T3CallsFix({inputs,onNext,onBack}){
   const s=useSp();
-  const [page,setPage]=useState(1);
 
-  const handling=inputs.handling||null;
   const answerSolution=inputs.answerSolution||null;
   const csrAiConfig=inputs.csrAiConfig||null;
   const hcpAssistConfig=inputs.hcpAssistConfig||null;
-  const selfBehavior=inputs.selfBehavior||null;
-  const csrCost=inputs.csrCost||3500;
-  const tc=inputs.tc||10;
   const mc=inputs.mc||3;
   const avgJobSize=inputs.avgJobSize||500;
   const closeRate=inputs.closeRate||30;
-  const callBookingRate=(inputs.callBookingRate||20)/100;
+  const trade=inputs.trade||"home services";
+  const handling=inputs.handling||null;
 
   const alreadyHasSolution=answerSolution==="csr_ai"||answerSolution==="hcp_assist";
   const activeConfig=answerSolution==="csr_ai"?csrAiConfig:answerSolution==="hcp_assist"?hcpAssistConfig:null;
   const onGood2Go=activeConfig==="good2go";
   const fullyOptimized=alreadyHasSolution&&onGood2Go;
+  const hasProductButWrongConfig=alreadyHasSolution&&!onGood2Go&&activeConfig!=null;
 
-  const monthlyMissed=Math.round(mc*52/12);
-  const monthlyLostJobs=Math.round(monthlyMissed*callBookingRate);
-  const monthlyLostRevenue=Math.round(monthlyLostJobs*avgJobSize);
+  const weeklyLostRevenue=Math.round(mc*avgJobSize*(closeRate/100));
 
-  // ROI uses their actual booking rate; Good2Go scenario uses 0.20 benchmark
-  const good2goRate=0.20;
-  const calcROI=(monthlyCost,recoveryRate,bRate)=>{
-    const jobsRecovered=Math.round(monthlyMissed*recoveryRate*bRate);
-    const revenueRecovered=Math.round(jobsRecovered*avgJobSize);
-    const netROI=revenueRecovered-monthlyCost;
-    const roiMultiple=monthlyCost>0?(revenueRecovered/monthlyCost).toFixed(1):"inf";
-    return {jobsRecovered,revenueRecovered,netROI,roiMultiple};
-  };
-
-  // Current booking rate ROI
-  const csrAiROI=calcROI(84,0.95,callBookingRate);
-  const hcpROI=calcROI(694,0.85,callBookingRate);
-  // Good2Go benchmark ROI (shown only if not already on Good2Go)
-  const csrAiROI_g2g=calcROI(84,0.95,good2goRate);
-  const hcpROI_g2g=calcROI(694,0.85,good2goRate);
-
+  // All hooks must be declared before conditional returns
   const [showHowTo,setShowHowTo]=useState(false);
+  const [showRollover,setShowRollover]=useState(false);
 
-  const limitationCopy={
-    self: selfBehavior==="voicemail"
-      ?(s?"Cada llamada perdida es un cliente que llama a tu competidor en los próximos 5 minutos.":"Every missed call is a customer calling your competitor within 5 minutes.")
-      :selfBehavior==="stepaway"
-      ?(s?"Interrumpir trabajos para contestar el teléfono compromete la calidad del trabajo y la llamada.":"Interrupting jobs to answer calls compromises both the job and the call.")
-      :(s?"Para cuando llamas de vuelta, el 80% ya contrató a alguien más.":"By the time you call back, 80% have already hired someone else."),
-    csr: s?`Tu recepcionista te cuesta ~$${Math.round(csrCost*1.3).toLocaleString()}/mes en salario y beneficios. Aún así, no puede cubrir noches, fines de semana ni llamadas simultáneas.`:`Your CSR costs ~$${Math.round(csrCost*1.3).toLocaleString()}/mo in salary and benefits and still cannot cover nights, weekends, or simultaneous calls.`,
-    service: answerSolution==="other"
-      ?(s?"La mayoría de los servicios de respuesta toman un mensaje y te envían un texto. El cliente espera, se enfría y llama a alguien más.":"Most answering services take a message and send you a text. The customer waits, cools off, and calls someone else.")
-      :"",
-  }[handling]||"";
-
-  if(page===1) return (
-    <div>
-      <SectionHeader emoji="⚙️" title={s?"Mejora tu Sistema — Llamadas Perdidas":"Upgrade Your System — Missed Calls"}/>
-
-      {fullyOptimized&&(
-        <div style={{background:"#EBF7EF",border:"2px solid #B8DEC6",borderRadius:14,padding:"14px 18px",marginBottom:16,display:"flex",alignItems:"center",gap:12}}>
-          <div style={{fontSize:28}}>🎉</div>
-          <div>
-            <div style={{fontWeight:800,color:"#065F46",fontSize:14}}>{s?"Sistema completamente optimizado":"System fully optimized"}</div>
-            <div style={{fontSize:13,color:"#047857",marginTop:2}}>
-              {answerSolution==="csr_ai"?"CSR AI":"HCP Assist"} {s?"con Good-to-Go Scheduling activo. Cada llamada queda agendada antes de que el cliente cuelgue. No se necesita ninguna acción.":"with Good-to-Go Scheduling active. Every call gets booked before the caller hangs up. No action needed."}
-            </div>
+  // ── FULLY OPTIMIZED — short confirmation, move on ──
+  if(fullyOptimized){
+    return (
+      <div>
+        <SectionHeader emoji="⚙️"
+          title={s?"Mejora tu Sistema — Llamadas":"Upgrade Your System — Calls"}/>
+        <div style={{background:"#F0FDF4",border:"2px solid #6EE7B7",
+          borderRadius:20,padding:"28px 24px",marginBottom:20,textAlign:"center"}}>
+          <div style={{fontSize:40,marginBottom:12}}>🎉</div>
+          <div style={{fontSize:18,fontWeight:900,color:"#065F46",marginBottom:8}}>
+            {s?"Sistema completamente optimizado":"You're fully set up"}
+          </div>
+          <div style={{fontSize:14,color:"#047857",lineHeight:1.7}}>
+            {answerSolution==="csr_ai"?"CSR AI":"HCP Assist"} {s
+              ?"con Good-to-Go Scheduling activo. Cada llamada queda reservada antes de colgar. No hay forma de que sigan buscando competidores una vez están en tu calendario."
+              :"with Good-to-Go Scheduling active. Every call gets booked before the caller hangs up. There's no way for them to keep shopping competitors once they're on your calendar."}
           </div>
         </div>
-      )}
-      {alreadyHasSolution&&!onGood2Go&&(
-        <div style={{background:"#FFFBEB",border:"2px solid #FCEFC7",borderRadius:14,padding:"16px 18px",marginBottom:16}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-            <span style={{fontSize:22}}>⚠️</span>
-            <div style={{fontWeight:800,color:"#78350F",fontSize:14}}>{s?"Tienes la herramienta pero no está completamente optimizada":"You have the tool but it is not fully optimized"}</div>
+        <BottomNav onBack={onBack} onNext={onNext}/>
+      </div>
+    );
+  }
+
+  // ── HAS PRODUCT, WRONG CONFIG — one-action close ──
+  if(hasProductButWrongConfig){
+    const productName=answerSolution==="csr_ai"?"CSR AI":"HCP Assist";
+    return (
+      <div>
+        <SectionHeader emoji="⚙️"
+          title={s?"Una Configuración. ${weeklyLostRevenue.toLocaleString()}/semana Recuperados.":"One Setting. $"+weeklyLostRevenue.toLocaleString()+"/Week Recovered."}/>
+
+        {/* The one action */}
+        <div style={{background:"linear-gradient(135deg,#1e3a5f,#0A2443)",
+          borderRadius:20,padding:"24px 22px",marginBottom:16}}>
+          <div style={{fontSize:12,fontWeight:800,color:YELLOW,
+            textTransform:"uppercase",letterSpacing:"1px",marginBottom:10}}>
+            {s?"LO QUE NECESITAS HACER":"WHAT YOU NEED TO DO"}
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:14}}>
-            {(answerSolution==="csr_ai"
-              ?[
-                {id:"good2go",label:"Good-to-Go Scheduling",recommended:true},
-                {id:"olb_link",label:"Send OLB Link",recommended:false},
-                {id:"take_message",label:"Take a Message",recommended:false},
-              ]
-              :[
-                {id:"good2go",label:"Good-to-Go Scheduling",recommended:true},
-                {id:"optional_followup",label:"Optional Pro Follow-Up",recommended:false},
-                {id:"take_message",label:"Take a Message",recommended:false},
-                {id:"notes_only",label:"Notes Only",recommended:false},
-              ]
-            ).map(opt=>{
-              const isCurrent=activeConfig===opt.id;
-              return (
-                <div key={opt.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:10,
-                  border:"2px solid "+(opt.recommended?"#10B981":isCurrent?"#FBBF24":GRAY200),
-                  background:opt.recommended?"#F0FDF4":isCurrent?"#FFFBEB":WHITE}}>
-                  <div style={{flex:1}}>
-                    <div style={{fontWeight:700,color:opt.recommended?"#065F46":isCurrent?"#78350F":GRAY600,fontSize:13}}>{opt.label}</div>
-                  </div>
-                  {opt.recommended&&<span style={{background:"#10B981",color:WHITE,fontSize:10,fontWeight:800,borderRadius:6,padding:"2px 8px"}}>{s?"RECOMENDADO":"RECOMMENDED"}</span>}
-                  {isCurrent&&!opt.recommended&&<span style={{background:"#FBBF24",color:NAVY,fontSize:10,fontWeight:800,borderRadius:6,padding:"2px 8px"}}>{s?"ACTUAL":"CURRENT"}</span>}
-                </div>
-              );
-            })}
+          <div style={{fontSize:17,fontWeight:900,color:WHITE,lineHeight:1.4,marginBottom:8}}>
+            {s?`Cambia ${productName} a Good-to-Go Scheduling`:`Switch ${productName} to Good-to-Go Scheduling`}
           </div>
-          <div style={{fontSize:13,color:"#78350F",lineHeight:1.7,marginBottom:14}}>
-            {s?"Con Good-to-Go Scheduling, el cliente queda agendado antes de colgar. Eso detiene que siga llamando a otros. Cualquier otra configuración deja ese trabajo en riesgo.":"With Good-to-Go Scheduling, the caller gets booked before they hang up. That stops them from shopping your competitors. Any other configuration leaves that job at risk."}
+          <div style={{fontSize:13,color:"rgba(255,255,255,0.7)",lineHeight:1.7,marginBottom:16}}>
+            {s?"Con Good-to-Go, el cliente queda reservado antes de colgar. No hay ventana de seguimiento. No hay competidores en medio. Sin costos adicionales — ya lo tienes."
+              :"With Good-to-Go, the customer gets booked before they hang up. No follow-up window. No competitors in between. No additional cost — you already have it."}
           </div>
+
+          {/* Recovery stat */}
+          <div style={{background:"rgba(255,183,6,0.12)",border:"1px solid rgba(255,183,6,0.3)",
+            borderRadius:12,padding:"12px 16px",marginBottom:14}}>
+            <div style={{fontSize:13,color:YELLOW,fontWeight:700}}>
+              💰 {s?`Recuperación estimada: $${weeklyLostRevenue.toLocaleString()}/semana`:`Estimated recovery: $${weeklyLostRevenue.toLocaleString()}/week`}
+            </div>
+          </div>
+
+          {/* Step-by-step expand */}
           <button onClick={()=>setShowHowTo(h=>!h)}
-            style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"1px solid #FBBF24",borderRadius:8,padding:"8px 14px",fontSize:12,color:"#78350F",fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+            style={{display:"flex",alignItems:"center",gap:8,
+              background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",
+              borderRadius:10,padding:"10px 14px",fontSize:13,color:WHITE,fontWeight:700,
+              cursor:"pointer",fontFamily:"inherit",width:"100%",textAlign:"left"}}>
             <span>{showHowTo?"▲":"▼"}</span>
-            {s?"¿Cómo actualizo mi configuración?":"How do I update my configuration?"}
+            {s?"Cómo hacerlo — instrucciones paso a paso":"How to do it — step by step"}
           </button>
           {showHowTo&&(
-            <div style={{marginTop:10,background:WHITE,borderRadius:10,padding:"12px 14px",fontSize:13,color:NAVY,lineHeight:1.7,border:"1px solid "+GRAY200}}>
+            <div style={{marginTop:10,background:"rgba(255,255,255,0.08)",borderRadius:10,
+              padding:"14px 16px",fontSize:13,color:"rgba(255,255,255,0.88)",lineHeight:1.9}}>
               {answerSolution==="csr_ai"?(
                 <div>
-                  <div style={{fontWeight:800,marginBottom:6}}>CSR AI</div>
-                  <div>{s?"Ve a Equipos y Permisos en Housecall Pro para ver y cambiar tu configuración de CSR AI.":"Go to Teams and Permissions in Housecall Pro to view and update your CSR AI configuration."}</div>
+                  <div style={{fontWeight:800,color:YELLOW,marginBottom:8}}>CSR AI → Good-to-Go Scheduling</div>
+                  <div>1. {s?"Abre Housecall Pro":"Open Housecall Pro"}</div>
+                  <div>2. {s?"Ve a Configuración → Equipos y Permisos":"Go to Settings → Teams and Permissions"}</div>
+                  <div>3. {s?"Abre la sección CSR AI":"Open the CSR AI section"}</div>
+                  <div>4. {s?"Cambia respuesta a llamadas → Good-to-Go Scheduling":"Change call response → Good-to-Go Scheduling"}</div>
+                  <div>5. {s?"Guarda. Listo.":"Save. Done."}</div>
                 </div>
               ):(
                 <div>
-                  <div style={{fontWeight:800,marginBottom:6}}>HCP Assist</div>
-                  <div>{s?"Contacta a soporte de Housecall Pro para actualizar tu configuración de HCP Assist. No se puede cambiar directamente desde la aplicación.":"Contact Housecall Pro support to update your HCP Assist configuration. It cannot be changed directly from the app."}</div>
+                  <div style={{fontWeight:800,color:YELLOW,marginBottom:8}}>HCP Assist → Good-to-Go Scheduling</div>
+                  <div>{s?"Llama al soporte de Housecall Pro y pídeles cambiar tu configuración de HCP Assist a Good-to-Go Scheduling. Tarda unos minutos y no hay costo extra.":"Call Housecall Pro support and ask them to switch your HCP Assist config to Good-to-Go Scheduling. Takes a few minutes, no extra cost."}</div>
                 </div>
               )}
             </div>
           )}
         </div>
-      )}
-
-      <div style={{background:NAVY,borderRadius:16,padding:"20px 22px",marginBottom:16}}>
-        <div style={{color:YELLOW,fontWeight:900,fontSize:12,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:12}}>
-          📊 {s?"Tu situación actual":"Your current situation"}
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:limitationCopy&&!alreadyHasSolution?14:0}}>
-          {[
-            {label:s?"Llamadas perdidas/mes":"Missed calls/mo",val:monthlyMissed},
-            {label:s?"Trabajos perdidos/mes":"Lost jobs/mo",val:monthlyLostJobs},
-            {label:s?"Ingresos perdidos/mes":"Lost revenue/mo",val:"$"+monthlyLostRevenue.toLocaleString()},
-            {label:s?"Tasa de pérdida":"Miss rate",val:tc>0?Math.round((mc/tc)*100)+"%":"0%"},
-          ].map((item,i)=>(
-            <div key={i} style={{background:"rgba(255,255,255,0.07)",borderRadius:12,padding:"12px 10px",textAlign:"center"}}>
-              <div style={{fontSize:20,fontWeight:900,color:i===2?RED:YELLOW,lineHeight:1}}>{item.val}</div>
-              <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"0.5px",marginTop:4,lineHeight:1.3}}>{item.label}</div>
-            </div>
-          ))}
-        </div>
-        {limitationCopy&&!alreadyHasSolution&&(
-          <div style={{borderTop:"1px solid rgba(255,255,255,0.1)",paddingTop:12,fontSize:13,color:"rgba(255,255,255,0.7)",lineHeight:1.7}}>
-            ⚠️ {limitationCopy}
-          </div>
-        )}
+        <BottomNav onBack={onBack} onNext={onNext}/>
       </div>
+    );
+  }
 
-      <BottomNav onBack={onBack} onNext={()=>setPage(2)}/>
-    </div>
-  );
-
-  const getConfigTier=(sol,config)=>{
-    if(!sol||sol==="other")return null;
-    if(config==="good2go")return"best";
-    if(config==="olb_link"||config==="optional_followup")return"better";
-    if(config==="take_message"||config==="notes_only")return"good";
-    return null;
-  };
-  const currentTier=getConfigTier(answerSolution,activeConfig);
-  const showTiers=alreadyHasSolution&&!!activeConfig;
-  const mkT=(isEs)=>({
-    best:{label:isEs?"Mejor":"Best",color:"#10B981",bg:"#F0FDF4",border:"#6EE7B7",icon:"★",
-      title:"Good-to-Go Scheduling",
-      desc:isEs?"El cliente queda agendado antes de colgar. Deja de buscar competidores en el momento en que reserva. El software envía confirmación automática, recordatorios y seguimiento sin trabajo extra de tu parte.":"The caller gets booked before they hang up. They stop shopping competitors the moment they schedule. The software sends automatic confirmation, reminders, and follow-up with zero extra work on your end.",
-      why:isEs?"Por qué es el mejor: agendar es lo que detiene al cliente de seguir llamando a la competencia.":"Why it is best: scheduling is what stops the customer from calling your competitors."},
-    better:{label:isEs?"Mejor que antes":"Better",color:"#0055FF",bg:"#F0F5FF",border:"#C8D8FF",icon:"▲",
-      title:answerSolution==="csr_ai"?(isEs?"Enviar Link de Reserva":"Send OLB Link"):(isEs?"Seguimiento Opcional del Pro":"Optional Pro Follow-Up"),
-      desc:answerSolution==="csr_ai"
-        ?(isEs?"El cliente recibe un link para reservar en línea. Algunos reservarán pero muchos no completarán el proceso.":"The caller receives a link to book online. Some will book but many will not complete the process.")
-        :(isEs?"El agente toma la información y tú confirmas la reserva. Hay una ventana donde el cliente puede seguir buscando.":"The agent takes the info and you confirm the booking. There is a window where the customer may still be shopping."),
-      why:isEs?"Mejor que tomar un mensaje, pero la ventana antes de la reserva confirmada deja al cliente en modo de búsqueda.":"Better than a message, but the gap before a confirmed booking leaves the customer in shopping mode."},
-    good:{label:isEs?"Punto de partida":"Good",color:"#B8860B",bg:"#FFFBEB",border:"#FCEFC7",icon:"●",
-      title:activeConfig==="notes_only"?(isEs?"Solo Notas":"Notes Only"):(isEs?"Tomar Mensaje":"Take a Message"),
-      desc:isEs?"La llamada queda registrada pero el cliente no queda agendado. Para cuando los llamas de vuelta, es probable que ya hayan contratado a alguien más.":"The call is logged but the customer is not booked. By the time you call back, there is a good chance they have already hired someone else.",
-      why:isEs?"Captura la llamada pero no captura al cliente. El seguimiento depende de ti y para entonces la ventana puede haberse cerrado.":"It captures the call but not the customer. Follow-up depends on you and by then the window may have closed."},
-  });
-  const TIERS=mkT(s);
-
+  // ── NO SOLUTION YET — differentiated cards + rollover path ──
+  const showsRollover=handling==="self"||handling==="csr";
   return (
     <div>
-      <SectionHeader emoji="⚙️" title={s?"¿Cómo se vería tu negocio con cobertura 24/7?":"What would your business look like with 24/7 coverage?"}
-        subtitle={s?"Ambas opciones garantizan disponibilidad 24/7 y reservas directas en tu calendario HCP. La única diferencia es quién contesta.":"Both options deliver 24/7 coverage and book directly into your HCP calendar. The only difference is who picks up."}/>
-
-      {showTiers&&(
-        <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
-          {["best","better","good"].map(tier=>{
-            const t=TIERS[tier];
-            const isCurrent=currentTier===tier;
-            const isBest=tier==="best";
-            return (
-              <div key={tier} style={{borderRadius:14,border:"2px solid "+(isCurrent?"#FBBF24":isBest?t.border:GRAY200),background:isCurrent?"#FFFBEB":isBest?t.bg:WHITE,overflow:"hidden"}}>
-                <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",borderBottom:"1px solid "+(isCurrent?"#FCEFC7":isBest?t.border:GRAY100)}}>
-                  <div style={{width:28,height:28,borderRadius:8,background:t.bg,border:"1.5px solid "+t.border,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <span style={{fontSize:14,fontWeight:900,color:t.color}}>{t.icon}</span>
-                  </div>
-                  <div style={{flex:1}}><div style={{fontSize:13,fontWeight:900,color:t.color}}>{t.label} — {t.title}</div></div>
-                  {isCurrent&&<span style={{background:"#FBBF24",color:NAVY,fontSize:10,fontWeight:800,borderRadius:6,padding:"2px 8px",flexShrink:0}}>{s?"TU CONFIG ACTUAL":"YOUR CURRENT CONFIG"}</span>}
-                  {isBest&&!isCurrent&&<span style={{background:t.color,color:WHITE,fontSize:10,fontWeight:800,borderRadius:6,padding:"2px 8px",flexShrink:0}}>{s?"RECOMENDADO":"RECOMMENDED"}</span>}
-                </div>
-                <div style={{padding:"12px 16px"}}>
-                  <div style={{fontSize:13,color:GRAY600,lineHeight:1.7,marginBottom:8}}>{t.desc}</div>
-                  <div style={{fontSize:12,fontWeight:700,lineHeight:1.6,background:t.bg,borderRadius:8,padding:"8px 12px",color:isCurrent&&!isBest?"#78350F":t.color}}>{t.why}</div>
-                </div>
-              </div>
-            );
-          })}
-          {currentTier==="best"
-            ?<div style={{background:"#EBF7EF",border:"2px solid #B8DEC6",borderRadius:14,padding:"14px 18px",display:"flex",alignItems:"center",gap:12}}>
-                <span style={{fontSize:24}}>🎉</span>
-                <div>
-                  <div style={{fontWeight:800,color:"#065F46",fontSize:14}}>{s?"Configuración óptima activa":"Optimal configuration active"}</div>
-                  <div style={{fontSize:13,color:"#047857",marginTop:2}}>{s?"Estás en la configuración de mayor impacto. Cada llamada queda agendada antes de que el cliente cuelgue.":"You are on the highest-impact configuration. Every call gets booked before the caller hangs up."}</div>
-                </div>
-              </div>
-            :<div style={{background:NAVY,borderRadius:14,padding:"16px 18px"}}>
-                <div style={{fontWeight:800,color:YELLOW,fontSize:13,marginBottom:10}}>{s?"Cómo actualizar a Good-to-Go Scheduling":"How to update to Good-to-Go Scheduling"}</div>
-                <button onClick={()=>setShowHowTo(h=>!h)} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"1px solid rgba(255,255,255,0.3)",borderRadius:8,padding:"8px 14px",fontSize:12,color:WHITE,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
-                  <span>{showHowTo?"▲":"▼"}</span>{showHowTo?(s?"Ocultar":"Hide"):(s?"Ver instrucciones":"Show instructions")}
-                </button>
-                {showHowTo&&<div style={{marginTop:10,background:"rgba(255,255,255,0.08)",borderRadius:10,padding:"12px 14px",fontSize:13,color:"rgba(255,255,255,0.85)",lineHeight:1.7}}>
-                  {answerSolution==="csr_ai"
-                    ?(s?"Ve a Equipos y Permisos en Housecall Pro para actualizar tu configuración de CSR AI a Good-to-Go Scheduling.":"Go to Teams and Permissions in Housecall Pro to update your CSR AI configuration to Good-to-Go Scheduling.")
-                    :(s?"Contacta a soporte de Housecall Pro para actualizar tu configuración de HCP Assist a Good-to-Go Scheduling.":"Contact Housecall Pro support to update your HCP Assist configuration to Good-to-Go Scheduling.")}
-                </div>}
-              </div>
-          }
+      <SectionHeader emoji="⚙️"
+        title={s?"La Solución — Cobertura 24/7":"The Fix — 24/7 Coverage"}/>
+      <div style={{background:NAVY,borderRadius:16,padding:"18px 20px",marginBottom:16,textAlign:"center"}}>
+        <div style={{fontSize:15,fontWeight:900,color:WHITE,lineHeight:1.5,marginBottom:6}}>
+          {s?"Los mejores operadores no contestan cada llamada ellos mismos."
+            :"The best operators don't answer every call themselves."}
         </div>
-      )}
-
-      {!showTiers&&(
-        <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:16}}>
-          <div style={{background:"#F0FDF4",border:"1px solid #6EE7B7",borderRadius:12,padding:"12px 16px",fontSize:13,color:"#065F46",fontWeight:700,lineHeight:1.6}}>
-            ★ {s?"Para máximo impacto, configura en Good-to-Go Scheduling. El cliente queda agendado antes de colgar y deja de buscar competidores.":"For maximum impact, configure on Good-to-Go Scheduling. The caller gets booked before they hang up and stops shopping your competitors."}
+        <div style={{fontSize:13,color:"rgba(255,255,255,0.6)",lineHeight:1.6}}>
+          {s?"Tienen un sistema que contesta, reserva y pone al cliente en su calendario — antes de que cuelguen."
+            :"They have a system that answers, books, and puts the customer on their calendar — before they hang up."}
+        </div>
+      </div>
+      <div style={{background:"#F0FDF4",border:"2px solid #6EE7B7",borderRadius:16,padding:"16px 18px",marginBottom:16}}>
+        <div style={{fontSize:11,fontWeight:800,color:"#065F46",textTransform:"uppercase",letterSpacing:"1.5px",marginBottom:6}}>
+          ★ {s?"La configuración que marca la diferencia":"The setting that makes the difference"}
+        </div>
+        <div style={{fontSize:16,fontWeight:900,color:"#065F46",marginBottom:6}}>Good-to-Go Scheduling</div>
+        <div style={{fontSize:13,color:"#047857",lineHeight:1.7}}>
+          {s?"El cliente queda reservado antes de colgar. En ese momento, deja de buscar competidores. No hay ventana. No hay seguimiento. Solo un trabajo en tu calendario."
+            :"The customer gets booked before they hang up. At that moment, they stop shopping competitors. No window. No follow-up. Just a job on your calendar."}
+        </div>
+      </div>
+      <div style={{fontSize:11,fontWeight:700,color:GRAY400,textTransform:"uppercase",letterSpacing:"1.5px",marginBottom:10}}>
+        {s?"DOS CAMINOS PARA LLEGAR AHÍ":"TWO WAYS TO GET THERE"}
+      </div>
+      {/* CSR AI */}
+      <div style={{background:WHITE,border:"2px solid "+GRAY200,borderRadius:16,padding:"18px",marginBottom:10}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+          <span style={{fontSize:28}}>🤖</span>
+          <div>
+            <div style={{fontWeight:900,color:NAVY,fontSize:16}}>CSR AI</div>
+            <span style={{background:"#0055FF",color:WHITE,fontWeight:800,fontSize:10,borderRadius:6,padding:"2px 8px"}}>DIGITAL</span>
           </div>
-          {[
-            {id:"csr_ai",emoji:"🤖",title:"CSR AI",tag:s?"ASISTENTE DIGITAL":"DIGITAL ASSISTANT",tagColor:"#0055FF",subLabel:s?"Contestación automatizada":"AI-powered answering",
-             pros:s?["Responde cada llamada al instante, las 24 horas del día","Agenda directamente en tu calendario HCP antes de que el cliente cuelgue","Crea perfiles de clientes en HCP automáticamente","Úsalo en modo de relevo o a tiempo completo"]:["Answers every call instantly, 24 hours a day, 7 days a week","Books directly into your HCP calendar before the caller hangs up","Creates HCP customer profiles automatically","Use it in rollover mode or full-time"],
-             bestFor:s?"Ideal para: Pros que quieren que cada llamada sea atendida por un asistente digital":"Best for: Pros who want every call handled by a digital assistant"},
-            {id:"hcp_assist",emoji:"👥",title:"HCP Assist",tag:s?"AGENTES HUMANOS":"LIVE AGENTS",tagColor:"#2E8B57",subLabel:s?"Contestación por agentes humanos":"Live agent answering",
-             pros:s?["Agentes norteamericanos reales atienden cada llamada, las 24 horas","Reservan, despachan y toman mensajes directamente en tu calendario HCP","Recibes un resumen de cada llamada sin trabajo extra de tu parte","Escala mes a mes según la temporada"]:["Real North American agents answer every call, 24 hours a day","Book, dispatch, and take messages directly into your HCP calendar","You get a post-call summary after every call with zero extra work","Scales month to month with your season"],
-             bestFor:s?"Ideal para: Pros que quieren que cada llamada sea atendida por una persona real":"Best for: Pros who want every call handled by a live person"},
-          ].map(opt=>(
-            <div key={opt.id} style={{background:WHITE,border:"2px solid "+GRAY200,borderRadius:16,overflow:"hidden"}}>
-              <div style={{padding:"16px 18px"}}>
-                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-                  <span style={{fontSize:26}}>{opt.emoji}</span>
-                  <div style={{flex:1}}>
-                    <div style={{fontWeight:900,color:NAVY,fontSize:16}}>{opt.title}</div>
-                    <div style={{display:"flex",gap:6,marginTop:3}}>
-                      <span style={{background:opt.tagColor,color:WHITE,fontWeight:900,fontSize:10,borderRadius:6,padding:"2px 8px"}}>{opt.tag}</span>
-                      <span style={{fontSize:11,color:GRAY400,fontWeight:600,alignSelf:"center"}}>{opt.subLabel}</span>
-                    </div>
-                  </div>
-                </div>
-                {opt.pros.map((p,i)=><div key={i} style={{fontSize:12,color:GRAY600,lineHeight:1.6,marginBottom:2}}>✓ {p}</div>)}
-                <div style={{marginTop:10,padding:"8px 10px",background:GRAY50,borderRadius:8,fontSize:11,color:NAVY,fontWeight:700}}>{opt.bestFor}</div>
+        </div>
+        <div style={{fontSize:14,color:GRAY600,lineHeight:1.7,marginBottom:10}}>
+          {s?"IA que contesta, reserva y crea el perfil del cliente — sin intervención humana. Siempre activo, sin costo de personal adicional."
+            :"AI that answers, books, and creates the customer profile — no human needed. Always-on, no additional staff cost."}
+        </div>
+        <div style={{padding:"8px 12px",background:GRAY50,borderRadius:8,fontSize:12,color:NAVY,fontWeight:700,marginBottom:6}}>
+          {s?"Mejor si: quieres cobertura 24/7 sin pagar a nadie extra":"Best if: you want 24/7 coverage without paying someone extra"}
+        </div>
+        <div style={{padding:"6px 12px",background:"#EFF6FF",borderRadius:8,fontSize:12,color:"#0055FF",fontWeight:700}}>
+          📍 {s?"Actívalo en: Configuración → Equipos y Permisos":"Activate in: Settings → Teams and Permissions"}
+        </div>
+      </div>
+      {/* HCP Assist */}
+      <div style={{background:WHITE,border:"2px solid "+GRAY200,borderRadius:16,padding:"18px",marginBottom:10}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+          <span style={{fontSize:28}}>👥</span>
+          <div>
+            <div style={{fontWeight:900,color:NAVY,fontSize:16}}>HCP Assist</div>
+            <span style={{background:"#2E8B57",color:WHITE,fontWeight:800,fontSize:10,borderRadius:6,padding:"2px 8px"}}>
+              {s?"AGENTES REALES":"LIVE AGENTS"}
+            </span>
+          </div>
+        </div>
+        <div style={{fontSize:14,color:GRAY600,lineHeight:1.7,marginBottom:10}}>
+          {s?"Agentes norteamericanos reales que contestan como si fueran parte de tu equipo — usan tu nombre comercial, conocen el lenguaje de home services y reservan directo en tu HCP. Tu cliente nunca sabe que no es tu oficina."
+            :"Real North American agents who answer as an extension of your team — they use your business name, know home service lingo, and book directly into your HCP. Your customer never knows it’s not your office."}
+        </div>
+        <div style={{background:"#F0FDF4",border:"1px solid #6EE7B7",borderRadius:10,padding:"12px 14px",marginBottom:10}}>
+          <div style={{fontSize:12,color:"#047857",fontStyle:"italic",lineHeight:1.7}}>
+            {s?"“Estábamos perdiendo demasiadas llamadas. Con HCP Assist lo resolvimos — saber que puedes ir a hacer tus cosas y que tu negocio sigue funcionando es increíble.”"
+              :"“We were just missing too many calls. With HCP Assist that’s solved — knowing you can go do stuff and have your business still run is honestly such a great experience.”"}
+          </div>
+          <div style={{fontSize:11,color:"#065F46",fontWeight:700,marginTop:6}}>
+            — {s?"Operador de home services, cliente de HCP Assist":"Home service operator, HCP Assist customer"}
+          </div>
+        </div>
+        <div style={{padding:"8px 12px",background:GRAY50,borderRadius:8,fontSize:12,color:NAVY,fontWeight:700,marginBottom:6}}>
+          {s?"Mejor si: quieres que tus clientes sientan que hablan con alguien de tu equipo":"Best if: you want customers to feel like they’re talking to your team"}
+        </div>
+        <div style={{padding:"6px 12px",background:"#EFF6FF",borderRadius:8,fontSize:12,color:"#0055FF",fontWeight:700}}>
+          📍 {s?"Actívalo en: Contacta al soporte de Housecall Pro":"Activate via: Contact Housecall Pro support"}
+        </div>
+      </div>
+      {/* ROLLOVER PATH */}
+      {showsRollover&&(
+        <div style={{marginBottom:14}}>
+          <button onClick={()=>setShowRollover(r=>!r)}
+            style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",
+              background:"#FAFAFA",border:"2px solid "+GRAY200,
+              borderRadius:showRollover?"12px 12px 0 0":"12px",
+              padding:"14px 16px",cursor:"pointer",fontFamily:"inherit"}}>
+            <div style={{textAlign:"left"}}>
+              <div style={{fontSize:13,fontWeight:800,color:NAVY}}>
+                {s?"🔄 ¿No estás listo para ceder el control de cada llamada?"
+                  :"🔄 Not ready to hand off every call?"}
+              </div>
+              <div style={{fontSize:11,color:GRAY400,marginTop:2}}>
+                {s?"Empieza con desvío de llamadas — tú primero, ellos de respaldo":"Start with rollover — you first, they back you up"}
               </div>
             </div>
-          ))}
+            <span style={{fontSize:14,color:GRAY400}}>{showRollover?"▲":"▼"}</span>
+          </button>
+          {showRollover&&(
+            <div style={{border:"2px solid "+GRAY200,borderTopWidth:0,borderRadius:"0 0 12px 12px",padding:"16px 18px",background:WHITE}}>
+              <div style={{fontSize:14,fontWeight:900,color:NAVY,marginBottom:8}}>
+                {s?"Tú sigues siendo el primero en contestar. Ellos son tu red de seguridad."
+                  :"You stay first in line. They’re your backup."}
+              </div>
+              <div style={{fontSize:13,color:GRAY600,lineHeight:1.8,marginBottom:12}}>
+                {s?"Configura CSR AI o HCP Assist como desvío: tu teléfono (o el de tu recepcionista) suena primero. Si no contestas en unos timbrazos, ellos toman la llamada, reservan al cliente y te mandan un resumen. Tú mantienes el control. No se pierde ninguna llamada."
+                  :"Set up CSR AI or HCP Assist as rollover: your phone (or your CSR’s) rings first. If you don’t pick up within a few rings, they catch the call, book the customer, and send you a summary. You stay in control. No call gets dropped."}
+              </div>
+              <div style={{background:"#FFF9EB",border:"1px solid #FCEFC7",borderRadius:10,padding:"12px 14px"}}>
+                <div style={{fontSize:12,color:"#92400E",fontWeight:700,lineHeight:1.7}}>
+                  💡 {s?"Así es como la mayoría empieza — con cobertura nocturna y de fin de semana primero. Una vez que ven que funciona, amplían a tiempo completo."
+                    :"This is how most pros start — after-hours and weekend coverage first. Once they see it work, they expand to full-time."}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
-
-      <BottomNav onBack={()=>setPage(1)} onNext={onNext}/>
+      <div style={{background:"#F0FDF4",border:"1px solid #6EE7B7",borderRadius:12,padding:"12px 16px",marginBottom:16}}>
+        <div style={{fontSize:12,color:"#065F46",fontWeight:700,lineHeight:1.6}}>
+          ✓ {s?"Ambos soportan Good-to-Go Scheduling. Ambos reservan al cliente antes de que cuelguen. Elige el que mejor se adapte a cómo trabajas."
+            :"Both support Good-to-Go Scheduling. Both book the customer before they hang up. Pick whichever fits how you work."}
+        </div>
+      </div>
+      <BottomNav onBack={onBack} onNext={onNext}/>
     </div>
   );
 }
@@ -3866,43 +4120,175 @@ function AssessmentScreen({inputs,setInputs,onBack,onNext,jumpTo,onJumpConsumed}
     return null;
   }
 
-  if(step==="call_sliders") return (
-    <div>
-      <ProgressBar/>
-      <SectionHeader emoji="📞" title={s?"Tus llamadas perdidas":"Your missed calls"}
-        subtitle={s?"Incluye llamadas fuera de horario y las que van al buzón.":"Include after-hours and calls that go to voicemail."}/>
-      <div style={{background:pctBg,border:"1px solid "+pctBrd,borderRadius:16,padding:"1.25rem 1.5rem",marginBottom:20,textAlign:"center"}}>
-        <div style={{fontSize:11,fontWeight:700,color:pctColor,textTransform:"uppercase",letterSpacing:"2px",marginBottom:8}}>{s?"Tasa de llamadas perdidas":"Missed call rate"}</div>
-        <div style={{fontSize:64,fontWeight:800,color:pctColor,lineHeight:1,marginBottom:4}}>{missedRate}<span style={{fontSize:32}}>%</span></div>
-        <div style={{fontSize:13,color:pctColor,fontWeight:600}}>
-          {missedRate>=40?(s?"Crítico — la mayoría sin respuesta":"Critical — most calls unanswered"):
-           missedRate>=20?(s?"Alto — ingresos escapando":"High — revenue leaking"):
-           missedRate===0&&handling==="service"&&answerSolution==="csr_ai"?(s?"Perfecto — CSR AI contesta todas tus llamadas":"Perfect — CSR AI answers every call for you"):
-           missedRate===0&&handling==="service"&&answerSolution==="hcp_assist"?(s?"Perfecto — HCP Assist contesta todas tus llamadas":"Perfect — HCP Assist answers every call for you"):
-           missedRate===0?(s?"Perfecto — contestas todas tus llamadas":"Perfect — you answer every call"):
-           (s?"Moderado — dólares escapando":"Moderate — real dollars slipping")}
-        </div>
-      </div>
-      <Card>
-        <AssessSlider label={s?"Llamadas entrantes / semana":"Total inbound calls / week"}
-          value={tc} min={1} max={100} step={1} onChange={v=>{setTc(v);if(mc>v)setMc(v);}}
-          leftLabel="1" rightLabel="100"/>
-        <div style={{borderTop:"1px solid "+GRAY100,paddingTop:16}}>
-          <AssessSlider label={s?"Llamadas perdidas / semana":"Missed calls / week"}
-            value={mc} min={0} max={tc} step={1} onChange={setMc}
-            leftLabel="0" rightLabel={String(tc)}/>
-          <div style={{display:"flex",alignItems:"center",gap:7,marginTop:2}}>
-            <div style={{width:8,height:8,borderRadius:"50%",background:GREEN,flexShrink:0}}/>
-            <span style={{fontSize:11,fontWeight:700,color:GREEN}}>
-              {s?"Estándar de oro: 0 llamadas perdidas (0%)":"Gold standard: 0 missed calls (0%)"}
-            </span>
+  if(step==="call_sliders"){
+    // All figures in weekly terms — that's what the Pro just entered
+    const weeklyLostRevenue=Math.round(mc*avgJobSize*(closeRate/100));
+    const annualLostRevenue=weeklyLostRevenue*52;
+    const hasSolution=answerSolution==="csr_ai"||answerSolution==="hcp_assist";
+
+    return (
+      <div>
+        <ProgressBar/>
+        <SectionHeader emoji="📞" title={s?"Tus llamadas perdidas":"Your missed calls"}
+          subtitle={s?"Incluye llamadas fuera de horario y las que van al buzón de voz.":"Include after-hours calls and calls that go to voicemail."}/>
+
+        {/* ── MISSED CALL RATE + DOLLAR IMPACT ── */}
+        <div style={{background:pctBg,border:"2px solid "+pctBrd,borderRadius:16,
+          padding:"20px 22px",marginBottom:16}}>
+          <div style={{fontSize:11,fontWeight:700,color:pctColor,textTransform:"uppercase",
+            letterSpacing:"2px",marginBottom:10,textAlign:"center"}}>
+            {s?"TASA DE LLAMADAS PERDIDAS":"MISSED CALL RATE"}
           </div>
+          <div style={{fontSize:64,fontWeight:800,color:pctColor,lineHeight:1,
+            marginBottom:4,textAlign:"center"}}>
+            {missedRate}<span style={{fontSize:32}}>%</span>
+          </div>
+          <div style={{fontSize:13,color:pctColor,fontWeight:700,
+            textAlign:"center",marginBottom:mc>0?16:0}}>
+            {missedRate>=40?(s?"Crítico — la mayoría de tus llamadas no son contestadas":"Critical — most of your calls are going unanswered"):
+             missedRate>=20?(s?"Alto — ingresos reales escapando cada semana":"High — real revenue leaking every week"):
+             missedRate===0&&hasSolution?(s?"Perfecto — tu solución contesta todas las llamadas":"Perfect — your coverage solution answers every call"):
+             missedRate===0?(s?"Perfecto — contestas todas tus llamadas":"Perfect — you are answering every call"):
+             (s?"Moderado — hay dinero escapando cada semana":"Moderate — revenue is slipping every week")}
+          </div>
+
+          {/* Dollar impact — only shown when there are missed calls */}
+          {mc>0&&(
+            <div style={{borderTop:"1px solid "+pctBrd,paddingTop:14}}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                {[
+                  {
+                    label:s?"Llamadas perdidas por semana":"Missed calls per week",
+                    val:String(mc),
+                    sub:s?`de ${tc} llamadas entrantes`:`out of ${tc} inbound calls`,
+                  },
+                  {
+                    label:s?"Ingresos perdidos por semana":"Lost revenue per week",
+                    val:"$"+weeklyLostRevenue.toLocaleString(),
+                    sub:s?`$${weeklyLostRevenue.toLocaleString()} × 52 semanas = $${annualLostRevenue.toLocaleString()}/año`
+                      :`$${weeklyLostRevenue.toLocaleString()} × 52 weeks = $${annualLostRevenue.toLocaleString()}/year`,
+                    red:true,
+                  },
+                ].map((item,i)=>(
+                  <div key={i} style={{background:"rgba(255,255,255,0.55)",borderRadius:12,
+                    padding:"12px 10px",textAlign:"center"}}>
+                    <div style={{fontSize:22,fontWeight:900,
+                      color:item.red?RED:pctColor,lineHeight:1,marginBottom:4}}>
+                      {item.val}
+                    </div>
+                    <div style={{fontSize:11,fontWeight:700,color:pctColor,
+                      marginBottom:3,lineHeight:1.3}}>{item.label}</div>
+                    <div style={{fontSize:10,color:"rgba(0,0,0,0.4)",fontWeight:600,
+                      lineHeight:1.4}}>{item.sub}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-      </Card>
-      <BottomNav onBack={()=>setStep(handling==="service"&&(answerSolution==="csr_ai"||answerSolution==="hcp_assist")?"call_config":"call_handling_detail")} onNext={()=>goNext("estimates")}/>
-    </div>
-  );
+        {/* ── SLIDERS ── */}
+        <Card>
+          <AssessSlider label={s?"Total de llamadas entrantes por semana":"Total inbound calls per week"}
+            value={tc} min={1} max={100} step={1} onChange={v=>{
+              // Keep miss rate constant when total calls changes
+              const currentRate=tc>0?mc/tc:0;
+              const newMc=Math.min(v,Math.round(currentRate*v));
+              setTc(v);
+              setMc(newMc);
+            }}
+            leftLabel="1" rightLabel="100"/>
+          <div style={{borderTop:"1px solid "+GRAY100,paddingTop:16}}>
+            <AssessSlider label={s?"Llamadas perdidas por semana":"Missed calls per week"}
+              value={mc} min={0} max={tc} step={1} onChange={setMc}
+              leftLabel="0" rightLabel={String(tc)}/>
+            <div style={{display:"flex",alignItems:"center",gap:7,marginTop:2}}>
+              <div style={{width:8,height:8,borderRadius:"50%",background:GREEN,flexShrink:0}}/>
+              <span style={{fontSize:11,fontWeight:700,color:GREEN}}>
+                {s?"Estándar de oro: 0 llamadas perdidas (0%)":"Gold standard: 0 missed calls (0%)"}
+              </span>
+            </div>
+          </div>
+        </Card>
+
+        {/* ── HOW A SOLUTION FIXES THIS — shown when there are missed calls ── */}
+        {mc>0&&(
+          <div style={{background:NAVY,borderRadius:16,padding:"18px 20px",marginBottom:4}}>
+            <div style={{fontSize:11,fontWeight:700,color:YELLOW,textTransform:"uppercase",
+              letterSpacing:"1.5px",marginBottom:12}}>
+              {s?"CÓMO SE SOLUCIONA ESTO":"HOW THIS GETS FIXED"}
+            </div>
+
+            {hasSolution?(
+              // They already have CSR AI or HCP Assist — tell them what it does for them
+              <div>
+                <div style={{fontSize:13,fontWeight:700,color:WHITE,lineHeight:1.7,marginBottom:12}}>
+                  {answerSolution==="csr_ai"
+                    ?(s?"CSR AI contesta cada llamada automáticamente, las 24 horas, los 7 días de la semana. Estas 3 llamadas perdidas por semana habrían sido contestadas y agendadas antes de que el cliente colgara.":"CSR AI answers every call automatically, 24 hours a day, 7 days a week. These 3 missed calls per week would have been answered and booked before the caller hung up.")
+                    :(s?"HCP Assist pone a agentes reales disponibles las 24 horas. Estas 3 llamadas perdidas por semana habrían sido contestadas por una persona real y agendadas directamente en tu calendario.":"HCP Assist puts real agents on call 24 hours a day. These 3 missed calls per week would have been answered by a real person and booked directly into your calendar.")}
+                </div>
+                <div style={{background:"rgba(16,185,129,0.12)",border:"1px solid rgba(16,185,129,0.3)",
+                  borderRadius:10,padding:"10px 14px",fontSize:13,color:"rgba(255,255,255,0.85)",
+                  fontWeight:600,lineHeight:1.6}}>
+                  ✅ {s
+                    ?`Con Good-to-Go Scheduling activado, recuperas potencialmente $${weeklyLostRevenue.toLocaleString()} por semana — $${annualLostRevenue.toLocaleString()} al año.`
+                    :`With Good-to-Go Scheduling active, you potentially recover $${weeklyLostRevenue.toLocaleString()} per week — $${annualLostRevenue.toLocaleString()} per year.`}
+                </div>
+              </div>
+            ):(
+              // No solution yet — show what each option would do for THEIR specific numbers
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {[
+                  {
+                    name:"CSR AI",
+                    tag:s?"ASISTENTE DIGITAL":"DIGITAL ASSISTANT",
+                    tagColor:"#0055FF",
+                    desc:s
+                      ?`Contesta automáticamente las ${mc} llamadas perdidas por semana, las 24 horas. Antes de que el cliente cuelgue, ya está agendado en tu calendario.`
+                      :`Automatically answers all ${mc} missed calls per week, around the clock. Before the caller hangs up, they are booked in your calendar.`,
+                    impact:s
+                      ?`Potencialmente recupera $${weeklyLostRevenue.toLocaleString()} por semana`
+                      :`Potentially recovers $${weeklyLostRevenue.toLocaleString()} per week`,
+                  },
+                  {
+                    name:"HCP Assist",
+                    tag:s?"AGENTES REALES":"LIVE AGENTS",
+                    tagColor:"#2E8B57",
+                    desc:s
+                      ?`Agentes reales contestan las ${mc} llamadas perdidas por semana, las 24 horas. Cada llamada queda agendada directamente en tu calendario de HCP.`
+                      :`Real agents answer all ${mc} missed calls per week, around the clock. Every call gets booked directly into your HCP calendar.`,
+                    impact:s
+                      ?`Potencialmente recupera $${weeklyLostRevenue.toLocaleString()} por semana`
+                      :`Potentially recovers $${weeklyLostRevenue.toLocaleString()} per week`,
+                  },
+                ].map((opt,i)=>(
+                  <div key={i} style={{background:"rgba(255,255,255,0.07)",
+                    borderRadius:12,padding:"14px 16px"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                      <span style={{fontWeight:900,color:WHITE,fontSize:14}}>{opt.name}</span>
+                      <span style={{background:opt.tagColor,color:WHITE,fontWeight:800,
+                        fontSize:10,borderRadius:6,padding:"2px 8px"}}>{opt.tag}</span>
+                    </div>
+                    <div style={{fontSize:13,color:"rgba(255,255,255,0.75)",
+                      lineHeight:1.65,marginBottom:8}}>{opt.desc}</div>
+                    <div style={{fontSize:12,fontWeight:800,color:YELLOW}}>
+                      💰 {opt.impact}
+                    </div>
+                  </div>
+                ))}
+                <div style={{fontSize:11,color:"rgba(255,255,255,0.4)",
+                  textAlign:"center",fontWeight:600,paddingTop:4}}>
+                  {s?"Ambas opciones se integran directamente con tu calendario de Housecall Pro.":"Both options book directly into your Housecall Pro calendar."}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <BottomNav onBack={()=>setStep(handling==="service"&&(answerSolution==="csr_ai"||answerSolution==="hcp_assist")?"call_config":"call_handling_detail")} onNext={()=>goNext("estimates")}/>
+      </div>
+    );
+  }
 
   if(step==="estimates") return (
     <div>
@@ -5444,8 +5830,10 @@ export function Week3App({onHome}){
             {phase==="t3_estimates_intro" &&<T3EstimatesIntro    onNext={()=>setPhase("t3_estimates_fix")} onBack={()=>setPhase("t3_customers_script")}/>}
             {phase==="t3_estimates_fix"   &&<T3EstimatesFix      onNext={()=>setPhase("t3_estimates_script")} onBack={()=>setPhase("t3_estimates_intro")}/>}
             {phase==="t3_estimates_script"&&<T3EstimatesScript   inputs={inputs} setFlag={setFlag} onNext={()=>setPhase("t3_calls_intro")} onBack={()=>setPhase("t3_estimates_fix")}/>}
-            {phase==="t3_calls_intro"     &&<T3CallsIntro        onNext={()=>setPhase("t3_calls_fix")} onBack={()=>setPhase("t3_estimates_script")}/>}
-            {phase==="t3_calls_fix"       &&<T3CallsFix          inputs={inputs} onNext={()=>setPhase("t3_calls_script")} onBack={()=>setPhase("t3_calls_intro")}/>}
+            {phase==="t3_calls_intro"     &&<T3CallsIntro        onNext={()=>setPhase("t3_calls_pain")} onBack={()=>setPhase("t3_estimates_script")}/>}
+            {phase==="t3_calls_pain"      &&<T3CallsPain         inputs={inputs} onNext={()=>setPhase("t3_calls_gap")}  onBack={()=>setPhase("t3_calls_intro")}/>}
+            {phase==="t3_calls_gap"       &&<T3CallsGap          inputs={inputs} onNext={()=>setPhase("t3_calls_fix")}  onBack={()=>setPhase("t3_calls_pain")}/>}
+            {phase==="t3_calls_fix"       &&<T3CallsFix          inputs={inputs} onNext={()=>setPhase("t3_calls_script")} onBack={()=>setPhase("t3_calls_gap")}/>}
             {phase==="t3_calls_script"    &&<T3CallsScript       inputs={inputs} setFlag={setFlag} onNext={()=>setPhase("t3_goal_complete")} onBack={()=>setPhase("t3_calls_fix")}/>}
             {phase==="t3_goal_complete"   &&<T3GoalComplete      flags={flags} setFlag={setFlag} onNavigate={nav} onBack={()=>setPhase("t3_calls_script")}/>}
 
